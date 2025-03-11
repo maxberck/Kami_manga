@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Nav from "./components/Nav"
 import Image from "next/image"
+import StatuManga from "@/app/components/StatuManga";
+
 export default function Home() {
     const [manga, setManga] = useState<any[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -61,9 +63,8 @@ export default function Home() {
               )}
 
           </section>
-          <section className="h-[75vh] w-full bg-[src:/vague-rouge.jpg] flex justify-center pb-8 bg-cover bg-center " style={{ backgroundImage: "url('/vague-rouge.jpg')" }}>
-              <button className="bg-[white] p-5">Ongoing</button>
-
+          <section className="h-[75vh] w-[100%] bg-[src:/vague-rouge.jpg] flex justify-center pb-8 bg-cover bg-center items-center gap-2" style={{ backgroundImage: "url('/vague-rouge.jpeg')" }}>
+                <StatuManga />
           </section>
       </main>
 
