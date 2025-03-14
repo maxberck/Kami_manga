@@ -4,3 +4,8 @@ body{
   /*background: #606b8d;*/
   margin: 0;
 }
+@layer utilities {
+  .text-shadow-black {
+    text-shadow: #111111 9px 5px;
+  }
+}
