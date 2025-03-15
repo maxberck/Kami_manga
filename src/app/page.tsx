@@ -25,7 +25,6 @@ export default function Home() {
                 if (!data || !data.data) {
                     throw new Error("Données invalides reçues de l'API");
                 }
-
                 // sort permet de tri des données en comparant a et b en soustrayant b à a fonction si il n'y  apas de NaN et de infinity
                 const rankManga = data.data.filter((manga: any ) => manga.rank !== null && manga.rank !== undefined).sort((a: any, b: any) => a.rank - b.rank).slice(0, 6);
                 setManga(rankManga);
@@ -37,6 +36,16 @@ export default function Home() {
         fetchManga()
     }, []);
 
+    const addToCart =  (manga: any, price: number) => {
+        let cart = JSON.parse(localStorage.getItem("cart")|| "[]");
+        const existManga = cart.find((item : any) => item.id === manga.mal_id);
+        if (existManga) {
+            existManga.quantity += 1;
+        }else{
+            cart.push({id: manga.mal_id, title: manga.title, image: manga.images?.jpg?.large_image_url, price: getFixedPrice(manga.mal_id), quantity: 1 });
+        }
+        localStorage.setItem("cart", JSON.stringify(cart));
+    }
 
     // const nextManga = () => {
     //     setCurrentIndex((prevIndex) => (prevIndex + 3)% manga.length);
@@ -76,6 +85,11 @@ export default function Home() {
                                           <h1 className="text-5xl font-black">{mangas.title.substring(0, 13)}</h1>
                                           <p className="text-md w-[90%] pt-2">{mangas.synopsis.substring(0, 200)}...</p>
                                           <p className="text-lg font-bold text-red-600 mt-2">Prix: {price}€</p>
+                                          <button onClick={() => addToCart(mangas, price)}
+                                                  className="text-white bg-blue-500 px-3 py-2 rounded mt-2">
+                                              Ajouter au panier
+                                          </button>
+
                                       </div>
                                   </div>
                               </Link>
