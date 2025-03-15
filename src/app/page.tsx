@@ -10,6 +10,9 @@ import RomanceManga from "@/app/components/RomanceManga";
 export default function Home() {
     const [manga, setManga] = useState<any[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const prices = [5.99, 7.49, 9.99, 12.99, 14.99];
+    const getFixedPrice = (id: number) => prices[id % prices.length];
+
     useEffect(() => {
         async function fetchManga(){
             try {
@@ -18,14 +21,13 @@ export default function Home() {
 
                 console.log("Réponse brute de l'API :", response);
                 console.log("Données JSON reçues :", data);
-                console.log(data.data.rank)
 
                 if (!data || !data.data) {
                     throw new Error("Données invalides reçues de l'API");
                 }
 
                 // sort permet de tri des données en comparant a et b en soustrayant b à a fonction si il n'y  apas de NaN et de infinity
-                const rankManga = data.data.sort((a: any, b: any) => a.rank - b.rank).slice(0, 6);
+                const rankManga = data.data.filter((manga: any ) => manga.rank !== null && manga.rank !== undefined).sort((a: any, b: any) => a.rank - b.rank).slice(0, 6);
                 setManga(rankManga);
                 console.log("Mangas triés par rank :", rankManga);
             }catch (error) {
@@ -61,6 +63,7 @@ export default function Home() {
                           manga.slice(currentIndex, currentIndex + 3).map((mangas, index) => {
                               // le regex de slug doit être fait dans la boucle pour prendre le bon titre et comme c'est une création de variable il faut ouvrir {} a la place de () et faire un return
                               const slug = mangas.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+                              const price = getFixedPrice(mangas.mal_id);
                               return (
 
                               <Link key={mangas.mal_id} href={`/card/${slug}`}>
@@ -72,6 +75,7 @@ export default function Home() {
                                           className="absolute bg-[white] border-[black] border-2 w-[80%] h-[40%] bottom-[5%] left-[-5%] p-5">
                                           <h1 className="text-5xl font-black">{mangas.title.substring(0, 13)}</h1>
                                           <p className="text-md w-[90%] pt-2">{mangas.synopsis.substring(0, 200)}...</p>
+                                          <p className="text-lg font-bold text-red-600 mt-2">Prix: {price}€</p>
                                       </div>
                                   </div>
                               </Link>
