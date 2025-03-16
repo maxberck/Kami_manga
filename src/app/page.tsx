@@ -36,14 +36,25 @@ export default function Home() {
         fetchManga()
     }, []);
 
+    // ici je déclare une fonction qui va me permettre d'ajouter des donner à mon localStorage pour le panier
     const addToCart =  (manga: any, price: number) => {
+        // ici JSON.parse permet de récupérer un objet à partir d'un JSON (API)
+        // le getItem permet de récupérer les données associé à la clef cart et si c'est null alors c'est un tableau vide
         let cart = JSON.parse(localStorage.getItem("cart")|| "[]");
+        // ici j'utilise find car elle ressort la première correspondance
+        // le "(item : any) => item.id === manga.mal_id" est une fonction de callback ( fonction de rappel ) elle va comparer l'id des élément du panier avec les id de l'API
         const existManga = cart.find((item : any) => item.id === manga.mal_id);
+        // si la correspondance est trouvé
         if (existManga) {
+            // on ajoute 1
             existManga.quantity += 1;
+        // sinon
         }else{
+            // on force les données à être envoyé
             cart.push({id: manga.mal_id, title: manga.title, image: manga.images?.jpg?.large_image_url, price: getFixedPrice(manga.mal_id), quantity: 1 });
         }
+        // ici on enregistre les données avec les clef ("cart") et la valeur est (cart = un tableau contenant des objets ici les données ajouté au panier)
+        // stringify convertit le tableau en une chaîne JSON pour qu'il puisse être enregistré
         localStorage.setItem("cart", JSON.stringify(cart));
     }
 
@@ -85,6 +96,7 @@ export default function Home() {
                                           <h1 className="text-5xl font-black">{mangas.title.substring(0, 13)}</h1>
                                           <p className="text-md w-[90%] pt-2">{mangas.synopsis.substring(0, 200)}...</p>
                                           <p className="text-lg font-bold text-red-600 mt-2">Prix: {price}€</p>
+                                          {/*ici on envoie les données avec le clique*/}
                                           <button onClick={() => addToCart(mangas, price)}
                                                   className="text-white bg-blue-500 px-3 py-2 rounded mt-2">
                                               Ajouter au panier
