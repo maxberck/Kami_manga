@@ -10,6 +10,8 @@ export default function MangaList() {
     const [theme, setTheme] = useState("");
     const [author, setAuthor] = useState("");
     const [search, setSearch] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const mangasPerPage = 18;
     const prices = [5.99, 7.49, 9.99, 12.99, 14.99];
     const getFixedPrice = (id: number) => prices[id % prices.length];
 
@@ -88,38 +90,62 @@ export default function MangaList() {
     }
     console.log(`tester voir le contenu de filtreMangas : ${filtreMangas}`)
 
+    const indexOfLastManga = currentPage * mangasPerPage;
+    const indexOfFirstManga = indexOfLastManga - mangasPerPage;
+    const currentManga = filtreMangas.slice(indexOfFirstManga, indexOfLastManga);
+    const totalPages = Math.ceil(filtreMangas.length / mangasPerPage);
+
 
     return(
         <main>
             {/*les input de recherche*/}
-            <div className={`flex justify-around pb-25`}>
+            <div className={`flex justify-center pb-25 pt-5 gap-10`}>
                 <input type="text" placeholder={`Search Author`} value={author}
                        onChange={(e) => setAuthor(e.target.value)} className={`border-2 rounded-md p-2 text-center`}/>
                 <input type="text" placeholder={`Search Name`} value={search}
                        onChange={(e) => setSearch(e.target.value)} className={`border-2 rounded-md p-2 text-center`}/>
+                <input type="text" placeholder={`Search Genre`} value={genre}
+                       onChange={(e) => setGenre(e.target.value)} className={`border-2 rounded-md p-2 text-center`}/>
+                <input type="text" placeholder={`Search Theme`} value={theme}
+                       onChange={(e) => setTheme(e.target.value)} className={`border-2 rounded-md p-2 text-center`}/>
             </div>
             <div className={`flex flex-wrap justify-around`}>
                 {
-                    filtreMangas.length > 0 ? (
-                        filtreMangas.map((manga) => {
+                    currentManga.length > 0 ? (
+                        currentManga.map((manga) => {
                             const price = getFixedPrice(manga.mal_id);
                             return (
-                                <div key={manga.mal_id} className="rounded-lg p-4 border-1">
-                                    <Image src={manga.images.jpg.large_image_url} alt="" width={100} height={100}/>
-                                    <p>Auteur : {manga.authors?.[0]?.name || "Inconnu"}</p>
-                                    <p className="text-lg font-bold text-red-600 mt-2">Prix: {price}€</p>
-                                    {/*ici on envoie les données avec le clique*/}
-                                    <button onClick={() => addToCart(manga, price)}
-                                            className="text-white bg-blue-500 px-3 py-2 rounded mt-2">
-                                        Ajouter au panier
-                                    </button>
+                                <div key={manga.mal_id} className="w-60">
+                                    <Image src={manga.images.jpg.large_image_url} alt="" width={250} height={375} className="rounded-md w-[250px] h-[375px]"/>
+                                    <p className="mt-2 text-lg font-semibold">{manga.title || "Inconnu"}</p>
+                                    <div className={`flex justify-around items-center pb-5`}>
+                                        <p className="text-lg font-bold text-red-600 mt-2">Prix: {price}€</p>
+                                        {/*ici on envoie les données avec le clique*/}
+                                        <button onClick={() => addToCart(manga, price)} className="text-white bg-blue-500 px-3 py-2 rounded mt-2">
+                                            Payer
+                                        </button>
+                                    </div>
                                 </div>
 
                             )
                         })) : (<div><p>Y a rien c'est la rue</p></div>)
                 }
             </div>
-            {/*<p>test voir si ca fonctionne</p>*/}
+            <div className="flex justify-center mt-6 gap-4">
+                <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-gray-300 disabled:opacity-50 rounded-md">
+                    Précédent
+                </button>
+                <span>Page {currentPage} sur {totalPages}</span>
+                <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 bg-gray-300 disabled:opacity-50 rounded-md">
+                    Suivant
+                </button>
+            </div>
         </main>
     )
 }

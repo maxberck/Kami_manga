@@ -14,31 +14,44 @@ export default function LoginPage() {
     const [users, setUsers] = useState<any[]>([]);
 
     useEffect(() => {
+        // je récupère les données users depuis le locale storage puis je le convertit en tableau
         const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
         setUsers(storedUsers);
     }, []);
-
+    // j'enpèche le rechargemnt de la page lorsque je soumets le formulaire
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
+        // connexion
         if (isLogin) {
+            // je cherche un utilisateur avec l'email et un mot de passe entrée
             const user = users.find(user => user.email === email && user.password === password);
+            // si il existe
             if (user) {
+                // je met isLOgin en true
                 localStorage.setItem("isLogin", "true");
+                // je met un message de connection réussite
                 toast.success("Connexion réussie !", { autoClose: 2000 });
+                //  je redirige vers le panier
                 router.push("/cart");
+            // si cest faux je mets un message d'erreur
             } else {
                 toast.error("Email ou mot de passe incorrect.", { autoClose: 2000 });
             }
+          // inscription
         } else {
+            // si l'adresse mail exite deja
             if (users.some(user => user.email === email)) {
                 toast.error("Cet email est déjà utilisé.", { autoClose: 2000 });
                 return;
             }
+            // sinon je crée un nouveau user
             const newUser = { email, password };
+             // que j'ajoute à users
             const updatedUsers = [...users, newUser];
             setUsers(updatedUsers);
+            // je l'ajoute au localStorage
             localStorage.setItem("users", JSON.stringify(updatedUsers));
+            // je le redirige
             localStorage.setItem("isLogin", "true");
             toast.success("Inscription réussie !", { autoClose: 2000 });
             router.push("/cart");

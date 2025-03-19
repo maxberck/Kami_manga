@@ -33,12 +33,15 @@ export default function Cart() {
         }
     }, []);
 
+    // gestion du payement coté design
     const handlePay = ()=>{
+        // si pas connecter
         if (!isLogin) {
             toast.error("Veuillez vous connecter pour payer.", { autoClose: 3000 })
             return;
         }
-        toast.success("Veuillez vous connecter pour payer.", {autoClose: 3000});
+        // si t'es connecté
+        toast.success("Merci de votre achat.", {autoClose: 3000});
         localStorage.removeItem("cart");
         setCart([])
     }
@@ -57,17 +60,18 @@ export default function Cart() {
     // [cart] fait que ça s'exécute à chaque changement du panier ATTENTION ne pas oublier la virgule avant
     }, [cart]);
 
-
+    // retire l'élément du panier
     const removeCart = (id: number) => {
         setCart((prevManga) => prevManga.filter((manga) => manga.id !== id));
     };
 
+    //  ajouter un élément au panier
     const plusQant = (id: number) => {
         setCart((prevManga) => prevManga.map((item) =>
             item.id === id ? { ...item, quantity: item.quantity + 1 } : item
         ));
     };
-
+    //  retirer un élément du panier
     const moinsQant = (id: number) => {
         setCart((prevManga) => prevManga.map((item) =>
             item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
@@ -81,6 +85,7 @@ export default function Cart() {
         localStorage.removeItem("cart"); // ps: le mettre sur payer et faire comme si c'était payé
     };
 
+    // le prix totale
     const totalPrice = () => {
         return cart.reduce((total, manga) => total + (manga.price ? manga.price * (manga.quantity || 1) : 0), 0).toFixed(2);
     };

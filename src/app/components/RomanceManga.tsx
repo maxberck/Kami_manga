@@ -16,27 +16,53 @@ interface Manga {
 
 export default function RomanceManga() {
     const [mangas, setMangas] = useState<Manga[]>([]);
+    const [loading, setLoading] = useState(true);
     const prices = [5.99, 7.49, 9.99, 12.99, 14.99];
     const getFixedPrice = (id: number) => prices[id % prices.length];
     useEffect(() => {
         async function fetchMange(){
-            const res = await fetch('/api/manga');
-            const data = await res.json();
+            try {
+                const res = await fetch('/api/manga');
+                const data = await res.json();
 
-            if (Array.isArray(data.data)) {
-                const actionManga = data.data.filter((manga: any) =>
-                    manga.genres.some((genre: any) => genre.name === "Romance")
-                );
-                // console.log(data.data.genres.name)
-                const maxManga = actionManga.sort((a: any, b: any) => a.rank - b.rank).slice(0, 10);
+                if (Array.isArray(data.data)) {
+                    const actionManga = data.data.filter((manga: any) =>
+                        manga.genres.some((genre: any) => genre.name === "Romance")
+                    );
+                    // console.log(data.data.genres.name)
+                    const maxManga = actionManga.sort((a: any, b: any) => a.rank - b.rank).slice(0, 10);
 
-                setMangas(maxManga);
+                    setMangas(maxManga);
+            }
+            }catch (error){
+                console.error("Problème dans lAPI", error);
+            }finally {
+                setLoading(false);
             }
         }
         fetchMange();
     }, []);
+
+    const addToCart = (mangas: any, price: number) => {
+        let cart = JSON.parse(localStorage.getItem("cart")|| '[]');
+        const existManga = cart.find((mangas: any) => mangas.id === mangas.mal_id);
+        if (existManga) {
+            existManga.quantity += 1;
+        }else{
+            cart.push({id : mangas.mal_id, title: mangas.title, images : mangas.images?.jpg?.large_image_url, price : getFixedPrice(mangas.mal_id), quantity: 1});
+        }
+        localStorage.setItem("cart", JSON.stringify(cart));
+    }
+
+    if (loading){
+        return (
+            <div className="flex justify-center items-center">
+                <p>tqt ca arrive le s attends un peu</p>
+            </div>
+        )
+    }
     return (
-        <div className="flex flex-wrap justify-around pt-[20%] w-[90%]">
+        <div className="flex flex-wrap justify-around pt-[2%] w-[90%]">
             {mangas.map((manga) => {
                 const price = getFixedPrice(manga.mal_id);
                 return (
@@ -49,8 +75,12 @@ export default function RomanceManga() {
                         <div className="pt-2">
                             <p className="text-xl font-black transform scale-y-175 tracking-tight max-w-[280px]">{manga.title}</p>
                             {/*By {manga.authors?.[0]?.name || "inconnu"}*/}
-                            <p className="pt-8">{manga.rank}</p>
-                            <p className="text-lg font-bold text-red-600 mt-2">Prix: {price}€</p>
+                            <div className="flex justify-around items-center">
+                                <button onClick={() => addToCart(mangas, price)}
+                                        className="text-white bg-blue-500 px-3 py-2 rounded mt-2">
+                                    Ajouter au panier
+                                </button>
+                                <p className="text-lg font-bold text-red-600 mt-2">Prix: {price}€</p></div>
                         </div>
                     </div>
                 )
