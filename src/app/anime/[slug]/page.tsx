@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Image from "next/image"
 import { useTheme } from "next-themes"
+import Link from "next/link";
 
 // Définition des types pour les animes
 type Anime = {
@@ -57,7 +58,7 @@ export default function AnimeDetails() {
                     <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-red-500 mx-auto" />
                     <h2 className={`${theme === "dark" ? "text-white" : "text-zinc-900"} mt-4 text-xl`}>Chargement...</h2>
                     <p className={`${theme === "dark" ? "text-zinc-400" : "text-zinc-600"}`}>
-                        Préparation des détails de l'anime
+                        Préparation des détails de l&#39;anime
                     </p>
                 </div>
             </div>
@@ -75,14 +76,14 @@ export default function AnimeDetails() {
                     <div className="text-6xl mb-4">😢</div>
                     <h2 className="text-2xl font-bold mb-4">Anime non trouvé</h2>
                     <p className={`mb-6 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
-                        Nous n'avons pas pu trouver l'anime que vous recherchez.
+                        Nous n&#39;avons pas pu trouver l&#39;anime que vous recherchez.
                     </p>
-                    <a
+                    <Link
                         href="/"
                         className="inline-block bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-md transition-colors"
                     >
-                        Retour à l'accueil
-                    </a>
+                        Retour à l&#39;accueil
+                    </Link>
                 </div>
             </div>
         )

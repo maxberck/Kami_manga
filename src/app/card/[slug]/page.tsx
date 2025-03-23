@@ -4,8 +4,6 @@ import { useEffect, useState, use } from "react"
 import Link from "next/link"
 import {useTheme} from "next-themes";
 
-const prices = [5.99, 7.49, 9.99, 12.99, 14.99]
-const getFixedPrice = (id: number) => prices[id % prices.length]
 const generateSlug = (title: string) => {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
 }

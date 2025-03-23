@@ -30,7 +30,7 @@ export default function LoginPage() {
             const user = users.find((user) => user.email === email && user.password === password)
             // si il existe
             if (user) {
-                // je met isLOgin en true
+                // je met isLogin en true
                 localStorage.setItem("isLogin", "true")
                 // je met un message de connection réussite
                 toast.success("Connexion réussie !", { autoClose: 2000 })
@@ -63,7 +63,6 @@ export default function LoginPage() {
 
     return (
         <div className={`flex min-h-screen bg-gradient-to-b ${theme === 'dark' ? 'from-gray-900 to-black text-white' : 'to-white text-black '}`}>
-            {/* Manga-style decorative elements */}
             <div className="hidden md:block w-1/2 bg-white bg-cover bg-center relative overflow-hidden">
                 <div className={`absolute inset-0 bg-opacity-50 ${theme === 'dark' ? 'bg-black' : 'bg-gray-200'}`}></div>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center z-10">
@@ -74,19 +73,15 @@ export default function LoginPage() {
                 </div>
                 <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent"></div>
             </div>
-            {/* Form container */}
             <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8">
                 <div className="w-full max-w-md relative">
-                    {/* Manga-style header for mobile */}
                     <div className="md:hidden text-center mb-8">
                         <h1 className="text-4xl font-black tracking-tighter mb-2 text-red-500 transform skew-y-3">
                             KAMI<span className={`${theme === 'dark'? 'text-white': 'text-black'}`}>MANGA</span>
                         </h1>
                         <p className="text-lg font-bold italic">Votre portail vers le panthéon des mangas</p>
                     </div>
-                    {/* Form card with manga-style design */}
                     <div className={`border-2 border-red-500 p-6 md:p-8 rounded-lg shadow-[8px_8px_0px_0px_rgba(220,38,38,0.8)] transform transition-all duration-300 hover:shadow-[12px_12px_0px_0px_rgba(220,38,38,0.8)] hover:-translate-y-1 ${theme === 'dark'? 'bg-gray-800' : 'bg-gray-200'}`}>
-                        {/* Toggle tabs */}
                         <div className="flex mb-6 border-b border-gray-700">
                             <button
                                 onClick={() => setIsLogin(true)}

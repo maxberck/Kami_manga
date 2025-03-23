@@ -12,8 +12,6 @@ export default function Home() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] =useState(true)
     const [isMobile , setIsMobile] = useState(false);
-    const prices = [5.99, 7.49, 9.99, 12.99, 14.99];
-    const getFixedPrice = (id: number) => prices[id % prices.length];
     const { theme } = useTheme()
 
     useEffect(() => {
@@ -53,27 +51,6 @@ export default function Home() {
 
 
 
-    // ici je déclare une fonction qui va me permettre d'ajouter des donner à mon localStorage pour le panier
-    const addToCart =  (manga: any, price: number) => {
-        // ici JSON.parse permet de récupérer un objet à partir d'un JSON (API)
-        // le getItem permet de récupérer les données associé à la clef cart et si c'est null alors c'est un tableau vide
-        let cart = JSON.parse(localStorage.getItem("cart")|| "[]");
-        // ici j'utilise find car elle ressort la première correspondance
-        // le "(item : any) => item.id === manga.mal_id" est une fonction de callback ( fonction de rappel ) elle va comparer l'id des élément du panier avec les id de l'API
-        const existManga = cart.find((item : any) => item.id === manga.mal_id);
-        // si la correspondance est trouvé
-        if (existManga) {
-            // on ajoute 1
-            existManga.quantity += 1;
-        // sinon
-        }else{
-            // on force les données à être envoyé
-            cart.push({id: manga.mal_id, title: manga.title, image: manga.images?.jpg?.large_image_url, price: getFixedPrice(manga.mal_id), quantity: 1 });
-        }
-        // ici on enregistre les données avec les clef ("cart") et la valeur est (cart = un tableau contenant des objets ici les données ajouté au panier)
-        // stringify convertit le tableau en une chaîne JSON pour qu'il puisse être enregistré
-        localStorage.setItem("cart", JSON.stringify(cart));
-    }
     if (loading){
         return(
             <div className="flex items-center justify-center min-h-screen">
@@ -94,8 +71,6 @@ export default function Home() {
     }
 
     const cardCarousel = isMobile ? 1 : 3
-    const maxCard = manga.length - cardCarousel
-
 
     return (
         <main className={`${theme === 'dark' ? 'bg-gray-700' : 'bg-[#f6f6f6]'}`}>
@@ -121,7 +96,7 @@ export default function Home() {
 
                         <div className={`flex flex-wrap justify-center gap-6 md:gap-10`}>
                             {
-                                manga.slice(currentIndex, currentIndex + cardCarousel).map((mangas, index) => {
+                                manga.slice(currentIndex, currentIndex + cardCarousel).map((mangas) => {
                                     // le regex de slug doit être fait dans la boucle pour prendre le bon titre et comme c'est une création de variable il faut ouvrir {} a la place de () et faire un return
                                     const slug = mangas.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
                                     return (

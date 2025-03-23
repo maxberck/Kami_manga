@@ -182,7 +182,7 @@ export default function MangaList() {
                                 </div>
 
                             )
-                        })) : (<div><p>Y a rien c'est la rue</p></div>)
+                        })) : (<div><p>Y a rien c&#39;est la rue</p></div>)
                 }
             </div>
             <div className="flex justify-center mt-6 gap-4">
