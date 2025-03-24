@@ -15,15 +15,14 @@ export default function Nav() {
     const router = useRouter()
     const {theme} = useTheme()
 
-    // Fonction pour vérifier si l'utilisateur est connecté
-    // Cette fonction lit la valeur "isLogin" dans le stockage local (localStorage)
+    //fonction pour vérifier si l'utilisateur est connecté
+    // cette fonction lit la valeur "isLogin" dans le stockage local (localStorage)
     // et met à jour l'état isLogin en conséquence
     const checkLoginStatus = () => {
         // On récupère la valeur stockée dans localStorage
         const userCo = localStorage.getItem("isLogin")
         // On met à jour l'état en vérifiant si la valeur est "true"
         setIsLogin(userCo === "true")
-        // Note: userCo peut être "true", "false" ou null si la clé n'existe pas
     }
 
     // Fonction pour charger les données du panier depuis localStorage
@@ -71,9 +70,7 @@ export default function Nav() {
             loadCart()
         }
 
-        // On ajoute l'écouteur pour les changements de localStorage entre onglets
         window.addEventListener("storage", handleStorageChange)
-        // On ajoute l'écouteur pour notre événement personnalisé
         window.addEventListener("localStorageChange", handleCustomEvent)
 
         // Cette vérification périodique est une solution de secours

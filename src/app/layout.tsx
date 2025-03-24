@@ -5,6 +5,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Nav from "@/app/components/Nav";
 import { Providers } from "./provider";
+import Footer from "@/app/components/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
           <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
           <Nav/>
           {children}
+          <Footer/>
       </Providers>
       </body>
     </html>

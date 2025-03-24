@@ -80,17 +80,19 @@ export default function Home() {
                     <h1 className="text-3xl md:text-5xl font-black text-[red] absolute md:left-[23%] left-[10%] bottom-[28%] transform scale-y-175 tracking-tight">BEST-SELLER</h1>
                 </div>
             </section>
-            <section className={`flex w-full h-auto md:h-[80vh] justify-center pb-8 py-10 md:py-0 ${theme === 'dark'? 'bg-gray-700' :'bg-[#f6f6f6]'}`}>
+            <section
+                className={`flex w-full h-auto md:h-[80vh] justify-center pb-8 py-10 md:py-0 ${theme === 'dark' ? 'bg-gray-700' : 'bg-[#f6f6f6]'}`}>
 
                 {manga.length > 0 && (
                     <div className="relative flex items-center justify-center gap-4 md:gap-15 bottom-15 px-4 md:px-0">
-                        <button onClick={() => setCurrentIndex((prevIndex) => (prevIndex === 0 ? manga.length - 3 : prevIndex - 1))}
+                        <button
+                            onClick={() => setCurrentIndex((prevIndex) => (prevIndex === 0 ? manga.length - 3 : prevIndex - 1))}
                             className="absolute left-0 md:left-[-50px] bg-black text-white p-2 rounded-full z-10">
                             ◀
                         </button>
 
                         <button onClick={() => setCurrentIndex((prevIndex) => (prevIndex + 1) % (manga.length - 2))}
-                            className="absolute right-0 md:right-[-50px] bg-black text-white p-2 rounded-full z-10 ">
+                                className="absolute right-0 md:right-[-50px] bg-black text-white p-2 rounded-full z-10 ">
                             ▶
                         </button>
 
@@ -102,10 +104,12 @@ export default function Home() {
                                     return (
 
                                         <Link key={mangas.mal_id} href={`/card/${slug}`}>
-                                            <div key={mangas.mal_id} className={`relative flex justify-center w-[300px] h-[450px] md:w-[450px] md:h-[700px] mx-auto md:mx-auto ${theme === 'dark'? 'shadow-[10px_10px_0px_3px_#1E2939] md:shadow-[20px_20px_0px_6px_#1E2939]':'shadow-[10px_10px_0px_3px_#000000] md:shadow-[20px_20px_0px_6px_#000000]'}`}>
+                                            <div key={mangas.mal_id}
+                                                 className={`relative flex justify-center w-[300px] h-[450px] md:w-[450px] md:h-[700px] mx-auto md:mx-auto ${theme === 'dark' ? 'shadow-[10px_10px_0px_3px_#1E2939] md:shadow-[20px_20px_0px_6px_#1E2939]' : 'shadow-[10px_10px_0px_3px_#000000] md:shadow-[20px_20px_0px_6px_#000000]'}`}>
                                                 <Image src={mangas.images?.jpg?.large_image_url} alt={mangas.title}
                                                        layout="fill" objectFit="cover" className=""/>
-                                                <div className={`absolute  border-[black] border-2 w-[80%] h-[40%] bottom-[5%] left-[-5%] p-3 md:p-5 ${theme === 'dark'?'bg-[#1E2939]' : 'bg-[white]'}`}>
+                                                <div
+                                                    className={`absolute  border-[black] border-2 w-[80%] h-[40%] bottom-[5%] left-[-5%] p-3 md:p-5 ${theme === 'dark' ? 'bg-[#1E2939]' : 'bg-[white]'}`}>
                                                     <h1 className={`text-3xl md:text-5xl font-black`}>{mangas.title.substring(0, 12)}</h1>
                                                     <p className="text-xs md:text-lg w-[90%] pt-2">{mangas.synopsis.substring(0, isMobile ? 100 : 200)}...</p>
                                                 </div>
@@ -125,21 +129,23 @@ export default function Home() {
                 <StatuManga/>
             </section>
             <section className="pt-45 ">
-                <div className={`relative flex items-center  w-[100%] h-[2vh] ${theme === 'dark'?'bg-gray-800':'bg-[#111111]'}`}>
+                <div
+                    className={`relative flex items-center  w-[100%] h-[2vh] ${theme === 'dark' ? 'bg-gray-800' : 'bg-[#111111]'}`}>
                     <div
-                        className={`absolute  h-[15vh] md:h-[25vh] w-[80%] flex items-center justify-center ${theme === 'dark'? 'bg-gray-800': 'bg-[#111111]'}`}>
+                        className={`absolute  h-[15vh] md:h-[25vh] w-[80%] flex items-center justify-center ${theme === 'dark' ? 'bg-gray-800' : 'bg-[#111111]'}`}>
                         <h1 className="text-4xl md:text-8xl font-black text-[red] absolute transform scale-y-250 scale-x-150 tracking-tight right-[12%] bottom-3 text-shadow-black">TENDANCE</h1>
                     </div>
                 </div>
             </section>
             <section className={`flex flex-col w-full pt-[10vh] md:pt-[20vh] pb-[5vh] md:pb-[10vh]`}>
                 <div>
-                    <div className={`ml-5 md:ml-20 overflow-hidden`}>
-                        <h1 className={` text-3xl md:text-5xl font-black pl-[18%] md:pl-[15%] transform scale-y-150 scale-x-150 ${theme === 'dark'?'text-white': 'text-[#2B3A67]'}`}>
+                    <div className={`pl-5 md:pl-20 overflow-hidden`}>
+                        <h1 className={` text-3xl md:text-5xl font-black pl-[18%] md:pl-[15%] transform scale-y-150 scale-x-150 ${theme === 'dark' ? 'text-white' : 'text-[#2B3A67]'}`}>
                             ACTION
                         </h1>
                     </div>
-                    <div className={`text-sm md:text-md font-black transform text-right ${theme === 'dark'?'text-white': 'text-[#2B3A67]'}`}>
+                    <div
+                        className={`text-sm md:text-md font-black transform text-right ${theme === 'dark' ? 'text-white' : 'text-[#2B3A67]'}`}>
                         <Link href={"/tri"}>
                             <p className={`text-right pr-[5%] md:pr-[10%]`}>see more --- </p>
                         </Link>
