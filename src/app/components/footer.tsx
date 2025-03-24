@@ -1,6 +1,6 @@
 export default function Footer() {
     return (
-        <footer className="bg-gray-900 text-white py-6 mt-10">
+        <footer className="bg-gray-900 text-white py-6 pt-10">
             <div className="container mx-auto flex flex-col items-center">
                 <h2 className="text-xl font-bold">KAMI MANGA</h2>
                 <div className="flex space-x-4 mt-3">
