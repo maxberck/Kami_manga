@@ -142,11 +142,11 @@ export default function RomanceManga() {
             {mangas.map((manga) => {
                 const price = getFixedPrice(manga.mal_id);
                 return (
-                    <div key={manga.mal_id} className="w-[280px]">
+                    <div key={manga.mal_id} className="xl:w-[280px] w-[250px]">
                         <div className={`relative`}>
                             <Link href={`/card/${generateSlug(manga.title)}`} className="text-blue-500">
                                 <Image src={manga.images.jpg.large_image_url} alt="" width={250} height={375}
-                                       className="rounded-md w-[280px] h-[400px]"/>
+                                       className="rounded-md xl:w-[280px] w-[250px] xl:h-[400px] h-[350px]"/>
                             </Link>
                             <button
                                 onClick={() => addToFav(manga)}

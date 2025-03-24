@@ -151,7 +151,7 @@ export default function ActionManga() {
             {mangas.map((manga) => {
                 const price = getFixedPrice(manga.mal_id)
                 return (
-                    <div key={manga.mal_id} className="w-[280px] relative mb-8">
+                    <div key={manga.mal_id} className="xl:w-[280px] w-[250px] relative pb-8">
                         <div className="relative">
                             <Link href={`/card/${generateSlug(manga.title)}`} className="text-blue-500 block">
                                 <Image
@@ -159,7 +159,7 @@ export default function ActionManga() {
                                     alt={manga.title}
                                     width={250}
                                     height={375}
-                                    className="rounded-md w-[280px] h-[400px]"
+                                    className="rounded-md xl:w-[280px] w-[250px] xl:h-[400px] h-[350px]"
                                 />
                             </Link>
 
