@@ -4,17 +4,43 @@ import { useEffect, useState, use } from "react"
 import Link from "next/link"
 import {useTheme} from "next-themes";
 
+// Interface complète pour définir la structure du Manga
+interface Manga {
+    mal_id: number
+    title: string
+    images: {
+        jpg: {
+            large_image_url: string
+        }
+    }
+    synopsis?: string
+    status?: string
+    genres?: Array<{
+        mal_id: number
+        name: string
+    }>
+    authors?: Array<{
+        name: string
+    }>
+    published?: {
+        prop?: {
+            from?: {
+                year?: number
+            }
+        }
+    }
+}
+
 const generateSlug = (title: string) => {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
 }
-
 
 export default function MangaDetails({ params }: { params: Promise<{ slug: string }> }) {
     const unwrappedParams = use(params)
     const { slug } = unwrappedParams
     const { theme } = useTheme();
-    const [manga, setManga] = useState<any[]>([])
-    const [mangaHaz, setMangaHaz] = useState<any[]>([])
+    const [manga, setManga] = useState<Manga[]>([])
+    const [mangaHaz, setMangaHaz] = useState<Manga[]>([])
     const [loading, setLoading] = useState<boolean>(true)
 
     useEffect(() => {
@@ -48,8 +74,8 @@ export default function MangaDetails({ params }: { params: Promise<{ slug: strin
     }, [manga])
 
     // trouver le bon manga avec le slug
-    const findManga = manga.find((manga: any) => {
-        const mangaSlug = generateSlug(manga.title)
+    const findManga = manga.find((currentManga: Manga) => {
+        const mangaSlug = generateSlug(currentManga.title)
         return mangaSlug === slug
     })
 
@@ -94,7 +120,7 @@ export default function MangaDetails({ params }: { params: Promise<{ slug: strin
                     <h1 className="text-4xl md:text-8xl font-black">{findManga.title}</h1>
                     <p className="w-full md:w-[80%] pt-5 text-base md:text-lg font-medium">{findManga.synopsis}</p>
                     <div className="flex gap-2 flex-wrap pt-5">
-                        {findManga.genres?.map((genre: any) => (
+                        {findManga.genres?.map((genre) => (
                             <button
                                 key={genre.mal_id}
                                 className={`rounded-full border-2 px-3 py-1 md:px-4 md:py-2 text-sm md:text-base text-black hover:bg-black hover:text-white ${theme === 'dark'? 'text-white hover:bg-[bg-gray-800] hover:text-white border-[white]' : 'text-black hover:bg-black hover:text-white border-[black]' }`}
@@ -154,4 +180,3 @@ export default function MangaDetails({ params }: { params: Promise<{ slug: strin
         </main>
     )
 }
-

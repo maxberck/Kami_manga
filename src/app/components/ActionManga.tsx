@@ -1,9 +1,9 @@
 'use client'
-
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
+// Interface pour Manga avec des types plus précis
 interface Manga {
     mal_id: number
     title: string
@@ -13,10 +13,22 @@ interface Manga {
         }
     }
     rank: number
-    authors: {
+    genres: Array<{
         name: string
-    }
-    status: string
+    }>
+    authors?: Array<{
+        name: string
+    }>
+    status?: string
+}
+
+// Interface pour l'élément du panier
+interface CartItem {
+    id: number
+    title: string
+    image: string
+    price: number
+    quantity: number
 }
 
 const generateSlug = (title: string) => {
@@ -30,21 +42,24 @@ export default function ActionManga() {
     const [mangas, setMangas] = useState<Manga[]>([])
     const [loading, setLoading] = useState(true)
     const prices = [5.99, 7.49, 9.99, 12.99, 14.99]
+
     const getFixedPrice = (id: number) => prices[id % prices.length]
 
-    // charger les favoris depuis localStorage au montage du composant
     useEffect(() => {
-        async function fetchMange() {
+        async function fetchManga() {
             try {
                 const res = await fetch("/api/manga")
                 const data = await res.json()
 
                 if (Array.isArray(data.data)) {
-                    const actionManga = data.data.filter((manga: any) =>
-                        manga.genres.some((genre: any) => genre.name === "Action"),
+                    // Typage strict pour le filtre et le tri
+                    const actionManga = data.data.filter((manga: Manga) =>
+                        manga.genres.some((genre) => genre.name === "Action")
                     )
 
-                    const maxManga = actionManga.sort((a: any, b: any) => a.rank - b.rank).slice(0, 10)
+                    const maxManga = actionManga
+                        .sort((a: Manga, b: Manga) => a.rank - b.rank)
+                        .slice(0, 10)
 
                     setMangas(maxManga)
                 }
@@ -54,44 +69,47 @@ export default function ActionManga() {
                 setLoading(false)
             }
         }
-        fetchMange()
+        fetchManga()
     }, [])
-
-    // fonction pour basculer un manga dans les favoris
 
     const addToFav = (manga: Manga) => {
         if (!manga || !manga.mal_id) {
-            console.error("Impossible d'ajouter un manga non défini aux favoris :", manga);
-            return;
+            console.error("Impossible d'ajouter un manga non défini aux favoris :", manga)
+            return
         }
-        let fav = JSON.parse(localStorage.getItem("favorites") || "[]");
-        if (!fav.includes(manga.mal_id)) {
-            fav.push(manga.mal_id);
+
+        // Utilisation de JSON.parse avec un fallback sûr
+        const fav: number[] = JSON.parse(localStorage.getItem("favorites") || "[]")
+        const newFav = fav.includes(manga.mal_id)
+            ? fav.filter((id) => id !== manga.mal_id)
+            : [...fav, manga.mal_id]
+
+        localStorage.setItem("favorites", JSON.stringify(newFav))
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const addToCart = (manga: Manga, price: number) => {
+        // Utilisation de JSON.parse avec un fallback sûr
+        const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]")
+
+        const existMangaIndex = cart.findIndex((item) => item.id === manga.mal_id)
+
+        if (existMangaIndex > -1) {
+            // Si le manga existe déjà, augmenter la quantité
+            const updatedCart = [...cart]
+            updatedCart[existMangaIndex].quantity += 1
+            localStorage.setItem("cart", JSON.stringify(updatedCart))
         } else {
-            fav = fav.filter((id: number) => id !== manga.mal_id);
-        }
-        localStorage.setItem("favorites", JSON.stringify(fav));
-    };
-
-
-    const addToCart = (manga: any, price: number) => {
-        const cart = JSON.parse(localStorage.getItem("cart") || "[]")
-        // Correction du bug: utiliser manga.mal_id au lieu de mangas.mal_id
-        const existManga = cart.find((item: any) => item.id === manga.mal_id)
-
-        if (existManga) {
-            existManga.quantity += 1
-        } else {
-            cart.push({
+            // Sinon ajouter un nouvel élément au panier
+            const newCartItem: CartItem = {
                 id: manga.mal_id,
                 title: manga.title,
-                image: manga.images?.jpg?.large_image_url,
+                image: manga.images?.jpg?.large_image_url || '',
                 price: getFixedPrice(manga.mal_id),
                 quantity: 1,
-            })
+            }
+            localStorage.setItem("cart", JSON.stringify([...cart, newCartItem]))
         }
-
-        localStorage.setItem("cart", JSON.stringify(cart))
     }
 
     if (loading) {

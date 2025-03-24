@@ -3,19 +3,31 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+
 interface Manga {
-    mal_id: number;
-    title: string;
-    images:{
-        jpg:{
-            large_image_url: string;
+    mal_id: number
+    title: string
+    images: {
+        jpg: {
+            large_image_url: string
         }
     }
-    rank: number;
-    authors: {
-        name: string;
-    };
-    status: string;
+    rank: number
+    genres: Array<{
+        name: string
+    }>
+    authors?: Array<{
+        name: string
+    }>
+    status?: string
+}
+// Interface pour l'élément du panier
+interface CartItem {
+    id: number
+    title: string
+    image: string
+    price: number
+    quantity: number
 }
 const generateSlug = (title: string) => {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -27,28 +39,31 @@ export default function RomanceManga() {
     const prices = [5.99, 7.49, 9.99, 12.99, 14.99];
     const getFixedPrice = (id: number) => prices[id % prices.length];
     useEffect(() => {
-        async function fetchManga(){
+        async function fetchManga() {
             try {
-                const res = await fetch('/api/manga');
-                const data = await res.json();
+                const res = await fetch("/api/manga")
+                const data = await res.json()
 
                 if (Array.isArray(data.data)) {
-                    const actionManga = data.data.filter((manga: any) =>
-                        manga.genres.some((genre: any) => genre.name === "Romance")
-                    );
-                    // console.log(data.data.genres.name)
-                    const maxManga = actionManga.sort((a: any, b: any) => a.rank - b.rank).slice(0, 10);
+                    // Typage strict pour le filtre et le tri
+                    const romanceManga = data.data.filter((manga: Manga) =>
+                        manga.genres.some((genre) => genre.name === "Romance")
+                    )
 
-                    setMangas(maxManga);
-            }
-            }catch (error){
-                console.error("Problème dans lAPI", error);
-            }finally {
-                setLoading(false);
+                    const maxManga = romanceManga
+                        .sort((a: Manga, b: Manga) => a.rank - b.rank)
+                        .slice(0, 10)
+
+                    setMangas(maxManga)
+                }
+            } catch (error) {
+                console.error("Erreur dans l'API", error)
+            } finally {
+                setLoading(false)
             }
         }
-        fetchManga();
-    }, []);
+        fetchManga()
+    }, [])
 
     const addToFav = (manga: Manga) => {
         if (!manga || !manga.mal_id) {
@@ -64,15 +79,29 @@ export default function RomanceManga() {
         localStorage.setItem("favorites", JSON.stringify(fav));
     };
 
-    const addToCart = (mangas: any, price: number) => {
-        let cart = JSON.parse(localStorage.getItem("cart")|| '[]');
-        const existManga = cart.find((mangas: any) => mangas.id === mangas.mal_id);
-        if (existManga) {
-            existManga.quantity += 1;
-        }else{
-            cart.push({id : mangas.mal_id, title: mangas.title, image : mangas.images?.jpg?.large_image_url, price : getFixedPrice(mangas.mal_id), quantity: 1});
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const addToCart = (manga: Manga, price: number) => {
+        // Utilisation de JSON.parse avec un fallback sûr
+        const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]")
+
+        const existMangaIndex = cart.findIndex((item) => item.id === manga.mal_id)
+
+        if (existMangaIndex > -1) {
+            // Si le manga existe déjà, augmenter la quantité
+            const updatedCart = [...cart]
+            updatedCart[existMangaIndex].quantity += 1
+            localStorage.setItem("cart", JSON.stringify(updatedCart))
+        } else {
+            // Sinon ajouter un nouvel élément au panier
+            const newCartItem: CartItem = {
+                id: manga.mal_id,
+                title: manga.title,
+                image: manga.images?.jpg?.large_image_url || '',
+                price: getFixedPrice(manga.mal_id),
+                quantity: 1,
+            }
+            localStorage.setItem("cart", JSON.stringify([...cart, newCartItem]))
         }
-        localStorage.setItem("cart", JSON.stringify(cart));
     }
 
     if (loading){

@@ -25,6 +25,15 @@ interface Manga {
     price?: number
 }
 
+// Define a type for cart items
+interface CartItem {
+    id: number;
+    title: string;
+    image: string;
+    price: number;
+    quantity: number;
+}
+
 const generateSlug = (title: string) => {
     return title
         .toLowerCase()
@@ -35,7 +44,7 @@ const generateSlug = (title: string) => {
 export default function FavoritesPage() {
     const [favorites, setFavorites] = useState<number[]>([])
     const [favoriteManga, setFavoriteManga] = useState<Manga[]>([])
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState<boolean>(true)
     const [allManga, setAllManga] = useState<Manga[]>([])
     const {theme} = useTheme()
 
@@ -43,14 +52,12 @@ export default function FavoritesPage() {
     const getFixedPrice = (id: number) => prices[id % prices.length]
 
     useEffect(() => {
-        const storedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+        const storedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]") as number[];
         setFavorites(storedFavorites);
     }, [localStorage.getItem("favorites")]);
 
-
     // charger les favoris et les données manga
     useEffect(() => {
-
         async function fetchAllManga() {
             try {
                 const res = await fetch("/api/manga")
@@ -74,7 +81,6 @@ export default function FavoritesPage() {
         console.log("Favoris stockés :", favorites);
         console.log("Mangas favoris filtrés :", favoriteManga);
     }, [allManga, favorites, favoriteManga]);
-
 
     // filtrer les mangas favoris quand les données sont chargées
     useEffect(() => {
@@ -104,25 +110,25 @@ export default function FavoritesPage() {
         });
     };
 
-
-
     const addToCart = (manga: Manga, price: number) => {
-        const cart = JSON.parse(localStorage.getItem("cart") || "[]")
-        const existManga = cart.find((item: any) => item.id === manga.mal_id)
+        const cartString = localStorage.getItem("cart") || "[]";
+        const cart: CartItem[] = JSON.parse(cartString);
+
+        const existManga = cart.find((item) => item.id === manga.mal_id);
 
         if (existManga) {
-            existManga.quantity += 1
+            existManga.quantity += 1;
         } else {
             cart.push({
                 id: manga.mal_id,
                 title: manga.title,
-                image: manga.images?.jpg?.large_image_url,
+                image: manga.images?.jpg?.large_image_url || '',
                 price: price,
                 quantity: 1,
-            })
+            });
         }
 
-        localStorage.setItem("cart", JSON.stringify(cart))
+        localStorage.setItem("cart", JSON.stringify(cart));
     }
 
     if (loading) {
@@ -161,10 +167,7 @@ export default function FavoritesPage() {
                         <p className={`mb-6 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
                             Explorez notre collection et ajoutez des mangas à vos favoris pour les retrouver ici.
                         </p>
-                        <Link
-                            href="/"
-                            className="inline-block bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-md transition-colors"
-                        >
+                        <Link href="/" className="inline-block bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-md transition-colors">
                             Découvrir des mangas
                         </Link>
                     </div>
@@ -175,10 +178,7 @@ export default function FavoritesPage() {
                             const isFavorite = favorites.includes(manga.mal_id)
 
                             return (
-                                <div
-                                    key={manga.mal_id}
-                                    className={`rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}
-                                >
+                                <div key={manga.mal_id} className={`rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
                                     <div className="relative">
                                         <Link href={`/card/${generateSlug(manga.title)}`}>
                                             <div className="relative h-[400px] w-full">
@@ -200,8 +200,7 @@ export default function FavoritesPage() {
                                                     : "bg-black bg-opacity-50 text-white hover:bg-red-500"
                                             } 
                                                 transition-all duration-300 transform ${isFavorite ? "scale-110" : "scale-100"}`}
-                                            aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-                                        >
+                                            aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}>
                                             {isFavorite ? "❤️" : "♡"}
                                         </button>
                                     </div>
@@ -212,22 +211,16 @@ export default function FavoritesPage() {
                                         {manga.genres && (
                                             <div className="mb-3 flex flex-wrap gap-1">
                                                 {manga.genres.slice(0, 2).map((genre) => (
-                                                    <span
-                                                        key={genre.name}
-                                                        className={`inline-block text-xs px-2 py-1 rounded ${theme === "dark" ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-800"}`}
-                                                    >
-                            {genre.name}
-                          </span>
+                                                    <span key={genre.name} className={`inline-block text-xs px-2 py-1 rounded ${theme === "dark" ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-800"}`}>
+                                                        {genre.name}
+                                                      </span>
                                                 ))}
                                             </div>
                                         )}
 
                                         <div className="flex justify-between items-center mt-3">
                                             <p className="text-red-500 font-bold">{price.toFixed(2)}€</p>
-                                            <button
-                                                onClick={() => addToCart(manga, price)}
-                                                className={`${theme === "dark" ? "bg-red-600 hover:bg-red-700" : "bg-black hover:bg-gray-800"} text-white px-3 py-2 rounded-md text-sm transition-colors`}
-                                            >
+                                            <button onClick={() => addToCart(manga, price)} className={`${theme === "dark" ? "bg-red-600 hover:bg-red-700" : "bg-black hover:bg-gray-800"} text-white px-3 py-2 rounded-md text-sm transition-colors`}>
                                                 Ajouter au panier
                                             </button>
                                         </div>

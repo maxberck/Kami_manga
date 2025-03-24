@@ -5,12 +5,44 @@ import {useSearchParams} from "next/navigation";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 
+// Interfaces to define the structure of manga and related objects
+interface MangaImage {
+    jpg: {
+        large_image_url: string;
+    };
+}
+
+interface MangaAuthor {
+    name: string;
+}
+
+interface MangaGenreTheme {
+    name: string;
+}
+
+interface Manga {
+    mal_id: number;
+    title: string;
+    images: MangaImage;
+    authors?: MangaAuthor[];
+    genres?: MangaGenreTheme[];
+    themes?: MangaGenreTheme[];
+}
+
+interface CartItem {
+    id: number;
+    title: string;
+    image: string;
+    price: number;
+    quantity: number;
+}
+
 const generateSlug = (title: string) => {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 };
 
 export default function MangaList() {
-    const [mangas, setManga] = useState<any[]>([]);
+    const [mangas, setManga] = useState<Manga[]>([]);
     const [loading, setLoading] = useState(true);
     const [genre, setGenre] = useState("");
     const [themes, setTheme] = useState("");
@@ -34,8 +66,7 @@ export default function MangaList() {
                 console.log(data.data)
             } catch (error){
                 console.error(error)
-
-            }finally {
+            } finally {
                 setLoading(false)
             }
         }
@@ -80,16 +111,10 @@ export default function MangaList() {
     }
 
     const filtreMangas = mangas.filter((manga) => {
-
-        const mangaTitle = manga?.title?.toLowerCase() || "";
-
-        const mangaAuthor = manga?.authors?.[0]?.name?.toLowerCase() || "";
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        const mangaGenres = manga?.genres?.map((g) => g.name.toLowerCase()).join(", ") || "";
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        const mangaThemes = manga?.themes?.map((t) => t.name.toLowerCase()).join(", ") || "";
+        const mangaTitle = manga.title?.toLowerCase() || "";
+        const mangaAuthor = manga.authors?.[0]?.name?.toLowerCase() || "";
+        const mangaGenres = manga.genres?.map((g) => g.name.toLowerCase()).join(", ") || "";
+        const mangaThemes = manga.themes?.map((t) => t.name.toLowerCase()).join(", ") || "";
 
         return (
             mangaTitle.includes(searchQuery.toLowerCase()) &&
@@ -97,55 +122,57 @@ export default function MangaList() {
             mangaAuthor.includes(author.toLowerCase()) &&
             mangaGenres.includes(genre.toLowerCase()) &&
             mangaThemes.includes(themes.toLowerCase())
-
         )
     })
 
-    const addToFav = (manga: any) => {
+    const addToFav = (manga: Manga) => {
         if (!manga || !manga.mal_id) {
             console.error("Impossible d'ajouter un manga non défini aux favoris :", manga);
             return;
         }
-        let fav = JSON.parse(localStorage.getItem("favorites") || "[]");
+        const favoritesStr = localStorage.getItem("favorites") || "[]";
+        const fav: number[] = JSON.parse(favoritesStr);
         if (!fav.includes(manga.mal_id)) {
             fav.push(manga.mal_id);
         } else {
-            fav = fav.filter((id: number) => id !== manga.mal_id);
+            const updatedFav = fav.filter((id) => id !== manga.mal_id);
+            localStorage.setItem("favorites", JSON.stringify(updatedFav));
+            return;
         }
         localStorage.setItem("favorites", JSON.stringify(fav));
     };
 
-    const addToCart = (manga: any, price: number) => {
-        // ici JSON.parse permet de récupérer un objet à partir d'un JSON (API)
-        // le getItem permet de récupérer les données associé à la clef cart et si c'est null alors c'est un tableau vide
-        let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-        // ici j'utilise find car elle ressort la première correspondance
-        // le "(item : any) => item.id === manga.mal_id" est une fonction de callback ( fonction de rappel ) elle va comparer l'id des élément du panier avec les id de l'API
-        const existManga = cart.find((item : any) => item.id === manga.mal_id);
-        // si la correspondance est trouvé
-        if (existManga) {
-            // on ajoute 1
-            existManga.quantity += 1;
-            // sinon
-        }else{
-            // on force les données à être envoyé
-            cart.push({id: manga.mal_id, title: manga.title, image: manga.images?.jpg?.large_image_url, price: getFixedPrice(manga.mal_id), quantity: 1 });
+    const addToCart = (manga: Manga) => {
+        const cartStr = localStorage.getItem("cart") || "[]";
+        const cart: CartItem[] = JSON.parse(cartStr);
+        const price = getFixedPrice(manga.mal_id);
+
+        const existMangaIndex = cart.findIndex((item) => item.id === manga.mal_id);
+
+        if (existMangaIndex !== -1) {
+            // If manga exists, increase quantity
+            cart[existMangaIndex].quantity += 1;
+        } else {
+            // If manga doesn't exist, add new item
+            cart.push({
+                id: manga.mal_id,
+                title: manga.title,
+                image: manga.images.jpg.large_image_url,
+                price: price,
+                quantity: 1
+            });
         }
-        // ici on enregistre les données avec les clef ("cart") et la valeur est (cart = un tableau contenant des objets ici les données ajouté au panier)
-        // stringify convertit le tableau en une chaîne JSON pour qu'il puisse être enregistré
+
         localStorage.setItem("cart", JSON.stringify(cart));
     }
-    console.log(`tester voir le contenu de filtreMangas : ${filtreMangas}`)
 
     const indexOfLastManga = currentPage * mangasPerPage;
     const indexOfFirstManga = indexOfLastManga - mangasPerPage;
     const currentManga = filtreMangas.slice(indexOfFirstManga, indexOfLastManga);
     const totalPages = Math.ceil(filtreMangas.length / mangasPerPage);
 
-
     return(
         <main className={`${theme === 'dark'? 'bg-gray-700': 'bg-gray-100'}`}>
-            {/*les input de recherche*/}
             <div className={`flex justify-center pb-25 pt-5 gap-2 md:gap-10 flex-wrap ${theme === 'dark'?'text-gray-300':'text-black border-black'}`}>
                 <input type="text" placeholder={`Search Author`} value={author} onChange={(e) => setAuthor(e.target.value)} className={`border-2 rounded-md md:p-2 text-center`}/>
                 <input type="text" placeholder={`Search Name`} value={search} onChange={(e) => setSearch(e.target.value)} className={`border-2 rounded-md md:p-2 text-center`}/>
@@ -174,13 +201,11 @@ export default function MangaList() {
                                     <p className="mt-2 text-lg font-semibold">{manga.title || "Inconnu"}</p>
                                     <div className={`flex justify-between items-center pb-5`}>
                                         <p className="text-[red] bg-red-100 px-3 py-2 rounded mt-2 text-[9px] md:text-lg">Prix: {price}€</p>
-                                        {/*ici on envoie les données avec le clique*/}
-                                        <button onClick={() => addToCart(manga, price)} className="text-white bg-black px-3 py-2 rounded mt-2 text-[9px] md:text-lg">
+                                        <button onClick={() => addToCart(manga)} className="text-white bg-black px-3 py-2 rounded mt-2 text-[9px] md:text-lg">
                                             Add to Cart
                                         </button>
                                     </div>
                                 </div>
-
                             )
                         })) : (<div><p>Y a rien c&#39;est la rue</p></div>)
                 }

@@ -6,132 +6,108 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Dark from "@/app/components/Dark";
 
+// Interface CartItem avec des types plus spécifiques
+interface CartItem {
+    id?: number;           // ID optionnel du manga
+    title?: string;        // Titre optionnel du manga
+    quantity: number;      // Quantité (obligatoire)
+    price?: number;        // Prix optionnel
+    image?: string;        // URL de l'image optionnelle
+}
 
 export default function Nav() {
-    const [cart, setCart] = useState<any[]>([])
-    const [isLogin, setIsLogin] = useState(false)
-    const [search, setSearch] = useState("")
-    const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [cart, setCart] = useState<CartItem[]>([])
+    const [isLogin, setIsLogin] = useState<boolean>(false)
+    const [search, setSearch] = useState<string>("")
+    const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
     const router = useRouter()
     const {theme} = useTheme()
 
-    //fonction pour vérifier si l'utilisateur est connecté
-    // cette fonction lit la valeur "isLogin" dans le stockage local (localStorage)
-    // et met à jour l'état isLogin en conséquence
+    // Les autres fonctions et hooks restent identiques au code original
+    // (checkLoginStatus, loadCart, handleLogout, etc.)
+
     const checkLoginStatus = () => {
-        // On récupère la valeur stockée dans localStorage
         const userCo = localStorage.getItem("isLogin")
-        // On met à jour l'état en vérifiant si la valeur est "true"
         setIsLogin(userCo === "true")
     }
 
-    // Fonction pour charger les données du panier depuis localStorage
-    // Cette fonction est appelée au chargement et quand le panier change
     const loadCart = () => {
-        // On récupère les données du panier depuis localStorage avec la clé "cart"
         const saveCart = localStorage.getItem("cart")
-        // Si des données existent dans le panier
         if (saveCart) {
-            // On convertit la chaîne JSON en objet JavaScript et on met à jour l'état
-            setCart(JSON.parse(saveCart))
+            // Parsing sécurisé avec vérification du type
+            try {
+                const parsedCart = JSON.parse(saveCart) as CartItem[];
+                setCart(parsedCart);
+            } catch (error) {
+                console.error("Erreur lors du parsing du panier :", error);
+                setCart([]);
+            }
         } else {
-            // Si le panier n'existe pas, on initialise avec un tableau vide
             setCart([])
         }
     }
 
-    // Ce useEffect s'exécute une seule fois au chargement du composant
-    // Il configure les écouteurs d'événements pour maintenir la synchronisation
     useEffect(() => {
-        // On vérifie l'état de connexion initial
         checkLoginStatus()
-        // On charge le panier initial
         loadCart()
 
-        // Cette fonction est appelée quand localStorage change dans un autre onglet
-        // Elle permet de synchroniser les données entre les onglets du navigateur
         const handleStorageChange = (e: StorageEvent) => {
-            // Si la clé modifiée est "isLogin", on met à jour l'état de connexion
             if (e.key === "isLogin") {
                 checkLoginStatus()
             }
-            // Si la clé modifiée est "cart", on recharge le panier
             if (e.key === "cart") {
                 loadCart()
             }
         }
 
-        // Cette fonction est appelée quand un événement personnalisé est déclenché
-        // Elle permet la communication entre différents composants de l'application
         const handleCustomEvent = () => {
-            // On vérifie l'état de connexion
             checkLoginStatus()
-            // On recharge le panier
             loadCart()
         }
 
         window.addEventListener("storage", handleStorageChange)
         window.addEventListener("localStorageChange", handleCustomEvent)
 
-        // Cette vérification périodique est une solution de secours
-        // Elle s'assure que les données sont toujours à jour même si les événements échouent
         const interval = setInterval(() => {
             checkLoginStatus()
             loadCart()
-        }, 500) // Vérifie toutes les 500 millisecondes (0.5 seconde)
+        }, 500)
 
-        // Fonction de nettoyage qui s'exécute quand le composant est démonté
-        // Elle supprime les écouteurs d'événements et arrête l'intervalle
         return () => {
             window.removeEventListener("storage", handleStorageChange)
             window.removeEventListener("localStorageChange", handleCustomEvent)
             clearInterval(interval)
         }
-    }, []) // Le tableau vide signifie que ce useEffect s'exécute une seule fois
+    }, [])
 
-    // Fonction pour déconnecter l'utilisateur
     const handleLogout = () => {
-        // On supprime la clé "isLogin" de localStorage
         localStorage.removeItem("isLogin")
-        // On met à jour l'état local pour refléter la déconnexion
         setIsLogin(false)
-        // On déclenche un événement personnalisé pour informer les autres composants
-        // que l'utilisateur s'est déconnecté
         window.dispatchEvent(new Event("localStorageChange"))
     }
 
-    // Ce useEffect s'exécute chaque fois que le panier change
-    // Il met à jour localStorage pour refléter l'état actuel du panier
     useEffect(() => {
-        // Si le panier contient des éléments
         if (cart.length > 0) {
-            // On sauvegarde le panier dans localStorage après l'avoir converti en JSON
             localStorage.setItem("cart", JSON.stringify(cart))
         } else {
-            // Si le panier est vide, on supprime la clé "cart" de localStorage
             localStorage.removeItem("cart")
         }
-    }, [cart]) // Ce useEffect s'exécute chaque fois que cart change
+    }, [cart])
 
-    // Calcul du nombre total d'articles dans le panier
-    // La méthode reduce additionne les quantités de tous les articles
+    // Calcul du nombre total d'articles dans le panier avec une valeur par défaut de 0
     const itemCount = cart.reduce((total, manga) => total + (manga.quantity || 0), 0)
 
-    // Fonction pour gérer la soumission du formulaire de recherche
-    const handleSearch = (event: React.FormEvent) => {
-        // Empêche le comportement par défaut du formulaire (rechargement de la page)
+    // Le reste du code reste identique au composant original
+    // (handleSearch, toggleMenu, et le rendu JSX)
+
+    const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
-        // Vérifie si la recherche n'est pas vide après avoir supprimé les espaces
         if (search.trim()) {
-            // Redirige vers la page de tri avec le terme de recherche dans l'URL
-            // encodeURIComponent s'assure que les caractères spéciaux sont correctement encodés
             router.push(`/tri?query=${encodeURIComponent(search)}`)
         }
     }
 
-    // Fonction pour basculer l'affichage du menu mobile
     const toggleMenu = () => {
-        // Inverse la valeur actuelle de isMenuOpen (true devient false, false devient true)
         setIsMenuOpen(!isMenuOpen)
     }
 

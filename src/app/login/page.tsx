@@ -8,53 +8,59 @@ import { toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useTheme } from "next-themes";
 
+// Define a type for user object
+interface User {
+    email: string;
+    password: string;
+}
+
 export default function LoginPage() {
     const router = useRouter()
-    const [isLogin, setIsLogin] = useState(true)
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [users, setUsers] = useState<any[]>([])
+    const [isLogin, setIsLogin] = useState<boolean>(true)
+    const [email, setEmail] = useState<string>("")
+    const [password, setPassword] = useState<string>("")
+    const [users, setUsers] = useState<User[]>([])
     const {theme} = useTheme()
 
     useEffect(() => {
-        // je récupère les données users depuis le locale storage puis je le convertit en tableau
-        const storedUsers = JSON.parse(localStorage.getItem("users") || "[]")
+        // Retrieve users from local storage and parse them
+        const storedUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]")
         setUsers(storedUsers)
     }, [])
-    // j'empèche le rechargemnt de la page lorsque je soumets le formulaire
+
+    // Prevent page reload when submitting the form
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        // connexion
+        // Login
         if (isLogin) {
-            // je cherche un utilisateur avec l'email et un mot de passe entrée
+            // Find a user with the entered email and password
             const user = users.find((user) => user.email === email && user.password === password)
-            // si il existe
+            // If user exists
             if (user) {
-                // je met isLogin en true
+                // Set login status to true
                 localStorage.setItem("isLogin", "true")
-                // je met un message de connection réussite
+                // Show success message
                 toast.success("Connexion réussie !", { autoClose: 2000 })
-                //  je redirige vers le panier
+                // Redirect to cart
                 router.push("/cart")
-                // si cest faux je mets un message d'erreur
             } else {
                 toast.error("Email ou mot de passe incorrect.", { autoClose: 2000 })
             }
-            // inscription
+            // Registration
         } else {
-            // si l'adresse mail exite deja
+            // Check if email already exists
             if (users.some((user) => user.email === email)) {
                 toast.error("Cet email est déjà utilisé.", { autoClose: 2000 })
                 return
             }
-            // sinon je crée un nouveau user
-            const newUser = { email, password }
-            // que j'ajoute à users
-            const updatedUsers = [...users, newUser]
+            // Create a new user
+            const newUser: User = { email, password }
+            // Add to users array
+            const updatedUsers: User[] = [...users, newUser]
             setUsers(updatedUsers)
-            // je l'ajoute au localStorage
+            // Add to localStorage
             localStorage.setItem("users", JSON.stringify(updatedUsers))
-            // je le redirige
+            // Set login status and redirect
             localStorage.setItem("isLogin", "true")
             toast.success("Inscription réussie !", { autoClose: 2000 })
             router.push("/cart")
@@ -155,4 +161,3 @@ export default function LoginPage() {
         </div>
     )
 }
-
