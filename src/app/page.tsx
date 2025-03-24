@@ -93,7 +93,7 @@ export default function Home() {
     return (
         <main className={theme === "dark" ? "bg-gray-700 text-white" : "bg-[#f6f6f6] text-black"}>
             <section className={theme === "dark" ? "bg-gray-700" : "bg-[#f6f6f6]"}>
-                <div className={`h-[40vh] w-[70%] md:w-[25%] relative ${theme === "dark" ? "bg-gray-800" : "bg-black"}`}>
+                <div className={`h-[40vh] w-[70%] lg:w-[40%] xl:w-[25%] relative ${theme === "dark" ? "bg-gray-800" : "bg-black"}`}>
                     <h1 className="text-3xl md:text-5xl font-black text-red-600 absolute md:left-[23%] left-[10%] bottom-[28%] transform scale-y-[1.75] tracking-tight">
                         BEST-SELLER
                     </h1>
@@ -132,7 +132,7 @@ export default function Home() {
                                 return (
                                     <Link key={mangas.mal_id} href={`/card/${slug}`}>
                                         <div
-                                            className={`relative flex justify-center w-[300px] h-[450px] md:w-[450px] md:h-[700px] mx-auto md:mx-auto transition-transform hover:scale-[1.02] ${
+                                            className={`relative flex justify-center w-[300px] h-[450px] md:w-[40px] md:w-[625px] xl:w-[450px] xl:h-[700px] mx-auto md:mx-auto transition-transform hover:scale-[1.02] ${
                                                 theme === "dark"
                                                     ? "shadow-[10px_10px_0px_3px_#1E2939] md:shadow-[20px_20px_0px_6px_#1E2939]"
                                                     : "shadow-[10px_10px_0px_3px_#000000] md:shadow-[20px_20px_0px_6px_#000000]"
