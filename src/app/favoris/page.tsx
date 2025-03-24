@@ -52,9 +52,19 @@ export default function FavoritesPage() {
     const getFixedPrice = (id: number) => prices[id % prices.length]
 
     useEffect(() => {
-        const storedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]") as number[];
-        setFavorites(storedFavorites);
-    }, [localStorage.getItem("favorites")]);
+        // Safely check for localStorage
+        if (typeof window !== 'undefined') {
+            const storedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]") as number[];
+            setFavorites(storedFavorites);
+        }
+    }, []);
+
+    // Modify the localStorage effect to check for window
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem("fav", JSON.stringify(favorites))
+        }
+    }, [favorites])
 
     // charger les favoris et les données manga
     useEffect(() => {
@@ -76,12 +86,6 @@ export default function FavoritesPage() {
         fetchAllManga()
     }, [])
 
-    useEffect(() => {
-        console.log("Mangas récupérés :", allManga);
-        console.log("Favoris stockés :", favorites);
-        console.log("Mangas favoris filtrés :", favoriteManga);
-    }, [allManga, favorites, favoriteManga]);
-
     // filtrer les mangas favoris quand les données sont chargées
     useEffect(() => {
         if (allManga.length > 0 && favorites.length > 0) {
@@ -92,45 +96,46 @@ export default function FavoritesPage() {
         }
     }, [allManga, favorites])
 
-    // sauvegarder les favoris dans localStorage quand ils changent
-    useEffect(() => {
-        localStorage.setItem("fav", JSON.stringify(favorites))
-    }, [favorites])
-
     const toggleFavorite = (mangaId: number) => {
         setFavorites((prevFavorites) => {
             const updatedFavorites = prevFavorites.includes(mangaId)
                 ? prevFavorites.filter((id) => id !== mangaId)
                 : [...prevFavorites, mangaId];
 
-            console.log("Mise à jour des favoris :", updatedFavorites);
-            localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+            // Safely set localStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+            }
 
             return updatedFavorites;
         });
     };
 
     const addToCart = (manga: Manga, price: number) => {
-        const cartString = localStorage.getItem("cart") || "[]";
-        const cart: CartItem[] = JSON.parse(cartString);
+        // Safely handle localStorage
+        if (typeof window !== 'undefined') {
+            const cartString = localStorage.getItem("cart") || "[]";
+            const cart: CartItem[] = JSON.parse(cartString);
 
-        const existManga = cart.find((item) => item.id === manga.mal_id);
+            const existManga = cart.find((item) => item.id === manga.mal_id);
 
-        if (existManga) {
-            existManga.quantity += 1;
-        } else {
-            cart.push({
-                id: manga.mal_id,
-                title: manga.title,
-                image: manga.images?.jpg?.large_image_url || '',
-                price: price,
-                quantity: 1,
-            });
+            if (existManga) {
+                existManga.quantity += 1;
+            } else {
+                cart.push({
+                    id: manga.mal_id,
+                    title: manga.title,
+                    image: manga.images?.jpg?.large_image_url || '',
+                    price: price,
+                    quantity: 1,
+                });
+            }
+
+            localStorage.setItem("cart", JSON.stringify(cart));
         }
-
-        localStorage.setItem("cart", JSON.stringify(cart));
     }
 
+    // Rest of the component remains the same...
     if (loading) {
         return (
             <div className="min-h-screen flex justify-center items-center">
