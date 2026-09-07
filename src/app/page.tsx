@@ -8,237 +8,110 @@ import ActionManga from "@/app/components/ActionManga"
 import RomanceManga from "@/app/components/RomanceManga"
 import { useTheme } from "next-themes"
 
-// Define proper TypeScript interfaces
-interface MangaImage {
-    jpg: {
-        large_image_url: string
-    }
+interface MangaImage { jpg: { large_image_url: string } }
+interface Manga { mal_id: number; title: string; synopsis: string; rank: number; images?: MangaImage }
+
+const slugify = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+
+function SectionHeading({ index, title, description }: { index: string; title: string; description: string }) {
+    return (
+        <div className="flex items-end justify-between border-b kami-line pb-4 mb-8">
+            <div className="flex items-end gap-5">
+                <span className="text-xs tracking-[0.35em] text-[var(--kami-red)]">{index}</span>
+                <div>
+                    <p className="text-[10px] uppercase tracking-[0.35em] text-[var(--kami-muted)] mb-1">Collection</p>
+                    <h2 className="kami-display text-4xl md:text-6xl font-semibold">{title}</h2>
+                </div>
+            </div>
+            <p className="hidden md:block max-w-xs text-xs leading-5 text-[var(--kami-muted)] text-right">{description}</p>
+        </div>
+    )
 }
 
-interface Manga {
-    mal_id: number
-    title: string
-    synopsis: string
-    rank: number
-    images?: MangaImage
-}
 export default function Home() {
     const [manga, setManga] = useState<Manga[]>([])
     const [currentIndex, setCurrentIndex] = useState(0)
     const [loading, setLoading] = useState(true)
-    const [isMobile, setIsMobile] = useState(false)
     const { theme } = useTheme()
-
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 1024)
-        }
-        checkMobile()
-
-        window.addEventListener("resize", checkMobile)
-
-        return () => {
-            window.removeEventListener("resize", checkMobile)
-        }
-    }, [])
 
     useEffect(() => {
         async function fetchManga() {
             try {
                 const response = await fetch("/api/manga")
                 const data = await response.json()
-
-                console.log("Réponse l'API :", response)
-                console.log("Données JSON :", data)
-
-                // Properly typed filter and sort
-                const rankManga = data.data
-                    .filter((manga: Manga) => manga.rank !== null && manga.rank !== undefined)
+                const ranked = data.data
+                    .filter((item: Manga) => item.rank !== null && item.rank !== undefined)
                     .sort((a: Manga, b: Manga) => a.rank - b.rank)
                     .slice(0, 6)
-
-                setManga(rankManga)
-                console.log("Mangas rank :", rankManga)
+                setManga(ranked)
             } catch (error) {
-                console.error(`Erreur trouvé : ${error}`)
-            } finally {
-                setLoading(false)
-            }
+                console.error("Erreur lors du chargement des mangas :", error)
+            } finally { setLoading(false) }
         }
         fetchManga()
     }, [])
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="relative">
-                    <div className="relative w-32 h-32">
-                        <div
-                            className="absolute w-full h-full rounded-full border-[3px] border-gray-100/10 border-r-[#0ff] border-b-[#0ff] animate-spin"
-                            style={{ animationDuration: "3s" }}
-                        />
-                        <div
-                            className="absolute w-full h-full rounded-full border-[3px] border-gray-100/10 border-t-[#0ff] animate-spin"
-                            style={{ animationDuration: "2s", animationDirection: "reverse" }}
-                        />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-tr from-[#0ff]/10 via-transparent to-[#0ff]/5 animate-pulse rounded-full blur-sm" />
-                </div>
-            </div>
-        )
+        return <main className="kami-paper-texture min-h-screen flex items-center justify-center"><div className="text-center"><p className="kami-vertical text-xs tracking-[0.4em] text-[var(--kami-red)] mx-auto h-24">KAMI</p><div className="mt-5 h-px w-24 bg-[var(--kami-ink)] animate-pulse" /><p className="mt-4 text-[10px] uppercase tracking-[0.3em] text-[var(--kami-muted)]">Chargement</p></div></main>
     }
 
-    const cardCarousel = isMobile ? 1 : 3
+    const current = manga[currentIndex]
+    const next = () => setCurrentIndex((i) => (i + 1) % manga.length)
+    const previous = () => setCurrentIndex((i) => (i - 1 + manga.length) % manga.length)
 
     return (
-        <main className={theme === "dark" ? "bg-gray-700 text-white" : "bg-[#f6f6f6] text-black"}>
-            <section className={theme === "dark" ? "bg-gray-700" : "bg-[#f6f6f6]"}>
-                <div className={`h-[40vh] w-[70%] lg:w-[40%] xl:w-[25%] relative ${theme === "dark" ? "bg-gray-800" : "bg-black"}`}>
-                    <h1 className="text-3xl md:text-5xl font-black text-red-600 absolute md:left-[23%] left-[10%] bottom-[28%] transform scale-y-[1.75] tracking-tight">
-                        BEST-SELLER
-                    </h1>
+        <main className={`kami-paper-texture min-h-screen ${theme === "dark" ? "dark" : ""}`}>
+            <section className="relative min-h-[78vh] px-5 md:px-12 lg:px-20 py-10 flex items-center overflow-hidden">
+                <div className="absolute left-5 top-10 kami-vertical text-[10px] tracking-[0.5em] text-[var(--kami-muted)]">MANGA / CULTURE / DISCOVERY</div>
+                <div className="absolute right-5 top-1/2 -translate-y-1/2 kami-vertical text-xs tracking-[0.35em] text-[var(--kami-red)]">漫画を読む</div>
+                <div className="absolute left-0 bottom-0 w-full border-t kami-line" />
+                <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-20 items-center w-full max-w-7xl mx-auto">
+                    <div className="kami-fade-up pt-10 md:pt-0">
+                        <p className="text-[10px] uppercase tracking-[0.5em] text-[var(--kami-red)] mb-7">01 — Édition du moment</p>
+                        <h1 className="kami-display text-[18vw] lg:text-[10rem] leading-[0.78] font-semibold">KAMI<span className="text-[var(--kami-red)]">.</span></h1>
+                        <p className="mt-8 max-w-md text-sm md:text-base leading-7 text-[var(--kami-muted)]">Une bibliothèque manga pensée comme une revue : découvrir, parcourir et retrouver les histoires qui méritent votre attention.</p>
+                        <div className="mt-9 flex items-center gap-6"><Link href="/tri" className="kami-link text-xs uppercase tracking-[0.25em] font-semibold">Explorer la collection</Link><span className="h-px w-16 bg-[var(--kami-ink)]" /></div>
+                    </div>
+                    {current && (
+                        <div className="relative kami-fade-up" style={{ animationDelay: "120ms" }}>
+                            <Link href={`/card/${slugify(current.title)}`} className="group block relative aspect-[4/5] max-w-lg ml-auto overflow-hidden border kami-line bg-[var(--kami-paper-strong)]">
+                                <Image src={current.images?.jpg?.large_image_url || "/placeholder.svg"} alt={current.title} fill className="object-cover transition-transform duration-700 group-hover:scale-[1.035]" priority />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                <div className="absolute top-5 left-5 bg-[var(--kami-red)] text-white text-[9px] tracking-[0.3em] uppercase px-3 py-2">N° {String(current.rank).padStart(2, "0")}</div>
+                                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-white">
+                                    <p className="text-[9px] uppercase tracking-[0.35em] opacity-70 mb-2">Best-seller</p>
+                                    <h2 className="kami-display text-3xl md:text-5xl leading-none">{current.title}</h2>
+                                </div>
+                            </Link>
+                            <div className="flex justify-between items-center mt-5 max-w-lg ml-auto">
+                                <span className="text-[10px] tracking-[0.2em] text-[var(--kami-muted)]">{String(currentIndex + 1).padStart(2, "0")} / {String(manga.length).padStart(2, "0")}</span>
+                                <div className="flex gap-2"><button onClick={previous} aria-label="Manga précédent" className="border kami-line w-10 h-10 hover:bg-[var(--kami-ink)] hover:text-[var(--kami-paper)] transition">←</button><button onClick={next} aria-label="Manga suivant" className="border kami-line w-10 h-10 hover:bg-[var(--kami-ink)] hover:text-[var(--kami-paper)] transition">→</button></div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
 
-            <section
-                className={`flex w-full h-auto md:h-[80vh] justify-center pb-8 py-10 md:py-0 ${
-                    theme === "dark" ? "bg-gray-700" : "bg-[#f6f6f6]"
-                }`}
-            >
-                {manga.length > 0 && (
-                    <div className="relative flex items-center justify-center gap-4 md:gap-15 bottom-15 px-4 md:px-0">
-                        <button
-                            onClick={() => setCurrentIndex((prevIndex) => (prevIndex === 0 ? manga.length - 3 : prevIndex - 1))}
-                            className="absolute left-0 md:left-[-50px] bg-black text-white p-2 rounded-full z-10 hover:bg-gray-800 transition-colors"
-                            aria-label="Previous"
-                        >
-                            ◀
-                        </button>
-
-                        <button
-                            onClick={() => setCurrentIndex((prevIndex) => (prevIndex + 1) % (manga.length - 2))}
-                            className="absolute right-0 md:right-[-50px] bg-black text-white p-2 rounded-full z-10 hover:bg-gray-800 transition-colors"
-                            aria-label="Next"
-                        >
-                            ▶
-                        </button>
-
-                        <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-                            {manga.slice(currentIndex, currentIndex + cardCarousel).map((mangas) => {
-                                const slug = mangas.title
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9]+/g, "-")
-                                    .replace(/^-|-$/g, "")
-                                return (
-                                    <Link key={mangas.mal_id} href={`/card/${slug}`}>
-                                        <div
-                                            className={`relative flex justify-center w-[300px] h-[450px] md:w-[40px] md:w-[625px] xl:w-[450px] xl:h-[700px] mx-auto md:mx-auto transition-transform hover:scale-[1.02] ${
-                                                theme === "dark"
-                                                    ? "shadow-[10px_10px_0px_3px_#1E2939] md:shadow-[20px_20px_0px_6px_#1E2939]"
-                                                    : "shadow-[10px_10px_0px_3px_#000000] md:shadow-[20px_20px_0px_6px_#000000]"
-                                            }`}
-                                        >
-                                            {mangas.images?.jpg?.large_image_url && (
-                                                <Image
-                                                    src={mangas.images.jpg.large_image_url || "/placeholder.svg"}
-                                                    alt={mangas.title}
-                                                    fill
-                                                    style={{ objectFit: "cover" }}
-                                                    priority={currentIndex === 0}
-                                                />
-                                            )}
-                                            <div
-                                                className={`absolute border-[black] border-2 w-[80%] h-[40%] bottom-[5%] left-[-5%] p-3 md:p-5 ${
-                                                    theme === "dark" ? "bg-[#1E2939]" : "bg-white"
-                                                }`}
-                                            >
-                                                <h2 className="text-3xl md:text-5xl font-black line-clamp-1">{mangas.title}</h2>
-                                                <p className="text-xs md:text-lg w-[90%] pt-2 line-clamp-3 md:line-clamp-4">
-                                                    {mangas.synopsis}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                )
-                            })}
-                        </div>
-                    </div>
-                )}
-            </section>
-
-            <section
-                className="h-[75vh] w-full bg-cover bg-center flex justify-center items-center gap-2 pb-8"
-                style={{ backgroundImage: "url('/vague-rouge.jpeg')" }}
-            >
+            <section className="px-5 md:px-12 lg:px-20 py-20 md:py-28 max-w-7xl mx-auto">
+                <SectionHeading index="02" title="Tendance" description="Les séries qui attirent actuellement le regard des lecteurs." />
+                <div className="border-y kami-line py-4 mb-16 flex justify-between text-[9px] uppercase tracking-[0.3em] text-[var(--kami-muted)]"><span>Dernières découvertes</span><span>Popularité / 2026</span></div>
                 <StatuManga />
             </section>
 
-            <section className="pt-45">
-                <div
-                    className={`relative flex items-center w-full h-[2vh] ${theme === "dark" ? "bg-gray-800" : "bg-[#111111]"}`}
-                >
-                    <div
-                        className={`absolute h-[15vh] md:h-[25vh] w-[80%] flex items-center justify-center ${
-                            theme === "dark" ? "bg-gray-800" : "bg-[#111111]"
-                        }`}
-                    >
-                        <h2 className="text-4xl md:text-8xl font-black text-red-600 absolute transform scale-y-[2.5] scale-x-[1.5] tracking-tight right-[12%] bottom-3 drop-shadow-lg">
-                            TENDANCE
-                        </h2>
-                    </div>
-                </div>
+            <section className="px-5 md:px-12 lg:px-20 py-20 md:py-28 max-w-7xl mx-auto">
+                <SectionHeading index="03" title="Action" description="Combat, aventure et énergie brute sélectionnés pour la collection KAMI." />
+                <div className="flex justify-center"><ActionManga /></div>
             </section>
 
-            <section className="flex flex-col w-full pt-[10vh] md:pt-[20vh] pb-[5vh] md:pb-[10vh]">
-                <div>
-                    <div className="pl-5 md:pl-20 overflow-hidden">
-                        <h2
-                            className={`text-3xl md:text-5xl font-black pl-[18%] md:pl-[15%] transform scale-y-[1.5] scale-x-[1.5] ${
-                                theme === "dark" ? "text-white" : "text-[#2B3A67]"
-                            }`}
-                        >
-                            ACTION
-                        </h2>
-                    </div>
-                    <div
-                        className={`text-sm md:text-md font-black transform text-right ${
-                            theme === "dark" ? "text-white" : "text-[#2B3A67]"
-                        }`}
-                    >
-                        <Link href="/tri">
-                            <p className="text-right pr-[5%] md:pr-[10%] hover:underline">see more --- </p>
-                        </Link>
-                    </div>
-                </div>
-                <div className="flex justify-center px-4 md:px-0">
-                    <ActionManga />
-                </div>
+            <section className="px-5 md:px-12 lg:px-20 py-20 md:py-28 max-w-7xl mx-auto border-t kami-line">
+                <SectionHeading index="04" title="Romance" description="Des histoires où les personnages et leurs liens occupent le premier plan." />
+                <div className="flex justify-center"><RomanceManga /></div>
+            </section>
 
-                <div className="pt-5 md:pt-10 overflow-hidden">
-                    <div className="pl-5 md:pl-20">
-                        <h2
-                            className={`text-3xl md:text-5xl font-black pl-[18%] md:pl-[15%] transform scale-y-[1.5] scale-x-[1.5] ${
-                                theme === "dark" ? "text-white" : "text-[#2B3A67]"
-                            }`}
-                        >
-                            ROMANCE
-                        </h2>
-                    </div>
-                    <div
-                        className={`text-sm md:text-md font-black transform text-right ${
-                            theme === "dark" ? "text-white" : "text-[#2B3A67]"
-                        }`}
-                    >
-                        <Link href="/tri">
-                            <p className="text-right pr-[5%] md:pr-[10%] hover:underline">see more --- </p>
-                        </Link>
-                    </div>
-                </div>
-                <div className="flex justify-center px-4 md:px-0">
-                    <RomanceManga />
-                </div>
+            <section className="px-5 md:px-12 lg:px-20 py-20 max-w-7xl mx-auto border-t kami-line flex flex-col md:flex-row justify-between gap-8">
+                <div><p className="text-[9px] uppercase tracking-[0.35em] text-[var(--kami-red)]">KAMI / 2026</p><p className="kami-display text-2xl mt-2">Lire. Découvrir. Recommencer.</p></div>
+                <Link href="/tri" className="kami-link self-start text-xs uppercase tracking-[0.25em]">Voir tous les mangas →</Link>
             </section>
         </main>
     )
 }
-
