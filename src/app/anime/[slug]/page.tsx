@@ -1,158 +1,32 @@
-'use client'
+"use client"
+
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Image from "next/image"
-import { useTheme } from "next-themes"
-import Link from "next/link";
+import Link from "next/link"
 
-// Définition des types pour les animes
-type Anime = {
-    mal_id: number
-    title: string
-    synopsis: string
-    images: {
-        jpg: { large_image_url: string }
-    }
-    genres: { name: string }[]
-    episodes: number
-    year: number
-}
-
-// fonction pour générer un slug et retrouver le nom de la même manière
-const generateSlug = (title: string) => {
-    return title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")
-}
+type Anime = { mal_id: number; title: string; synopsis: string; images: { jpg: { large_image_url: string } }; genres: { name: string }[]; episodes: number; year: number }
+const generateSlug = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
 
 export default function AnimeDetails() {
-    const { theme } = useTheme()
-    const { slug } = useParams()
-    const [anime, setAnime] = useState<Anime | null>(null)
-    const [loading, setLoading] = useState(true)
+  const { slug } = useParams<{ slug: string }>()
+  const [animes, setAnimes] = useState<Anime[]>([]), [loading, setLoading] = useState(true)
+  useEffect(() => { if (!slug) return; fetch("/api/anime").then(r => r.json()).then(d => setAnimes(d.data || [])).catch(console.error).finally(() => setLoading(false)) }, [slug])
+  const anime = animes.find(a => generateSlug(a.title) === slug)
+  const related = animes.filter(a => a.mal_id !== anime?.mal_id).slice(0, 4)
 
-    useEffect(() => {
-        if (!slug) return
+  if (loading) return <main className="kami-paper-texture min-h-screen flex items-center justify-center"><div className="text-center"><span className="kami-vertical text-xs tracking-[.4em] text-[var(--kami-red)]">KAMI</span><p className="mt-5 text-[10px] uppercase tracking-[.3em] text-[var(--kami-muted)]">Chargement de la fiche</p></div></main>
+  if (!anime) return <main className="kami-paper-texture min-h-screen flex items-center justify-center px-6"><div className="text-center"><p className="text-[9px] uppercase tracking-[.4em] text-[var(--kami-red)]">Erreur 404</p><h1 className="kami-display text-5xl mt-3">Anime introuvable</h1><Link href="/anime" className="kami-link inline-block mt-8 text-xs uppercase tracking-[.25em]">Retour aux anime</Link></div></main>
 
-        async function fetchAnime() {
-            try {
-                const res = await fetch("http://localhost:3000/api/anime")
-                const data = await res.json()
-                // recherche une correspondence
-                const animeData = data.data.find((anime: Anime) => generateSlug(anime.title) === slug)
-                setAnime(animeData || null)
-            } catch (error) {
-                console.error("Erreur dans l'API :", error)
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchAnime()
-    }, [slug])
-
-    if (loading) {
-        return (
-            <div className={`min-h-screen flex justify-center items-center ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"}`}>
-                <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-red-500 mx-auto" />
-                    <h2 className={`${theme === "dark" ? "text-white" : "text-zinc-900"} mt-4 text-xl`}>Chargement...</h2>
-                    <p className={`${theme === "dark" ? "text-zinc-400" : "text-zinc-600"}`}>
-                        Préparation des détails de l&#39;anime
-                    </p>
-                </div>
-            </div>
-        )
-    }
-
-    if (!anime) {
-        return (
-            <div
-                className={`min-h-screen flex justify-center items-center p-4 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"}`}
-            >
-                <div
-                    className={`max-w-md w-full text-center p-8 rounded-lg shadow-md ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}
-                >
-                    <div className="text-6xl mb-4">😢</div>
-                    <h2 className="text-2xl font-bold mb-4">Anime non trouvé</h2>
-                    <p className={`mb-6 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
-                        Nous n&#39;avons pas pu trouver l&#39;anime que vous recherchez.
-                    </p>
-                    <Link
-                        href="/"
-                        className="inline-block bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-md transition-colors"
-                    >
-                        Retour à l&#39;accueil
-                    </Link>
-                </div>
-            </div>
-        )
-    }
-
-    return (
-        <main
-            className={`min-h-screen ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"} p-4 md:p-6`}
-        >
-            <div
-                className={`max-w-6xl mx-auto rounded-lg shadow-lg overflow-hidden ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}
-            >
-                <section className="flex flex-col md:flex-row p-4 md:p-6">
-                    <div className="w-full md:w-auto flex justify-center md:justify-start mb-6 md:mb-0">
-                        <div className="relative w-64 h-96 md:w-72 md:h-108 shadow-md rounded-md overflow-hidden border-2 border-red-500">
-                            <Image
-                                src={anime.images.jpg.large_image_url || "/placeholder.svg"}
-                                alt={anime.title}
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="md:ml-8 flex-1">
-                        <h1 className="text-2xl md:text-4xl font-bold mb-2 text-red-500">{anime.title}</h1>
-
-                        <div className="mb-6">
-                            <div className="flex flex-wrap gap-2 mt-3 mb-4">
-                                {anime.genres.map((genre) => (
-                                    <span key={genre.name} className={`px-3 py-1 rounded-full text-sm ${theme === "dark" ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-800"}`}>
-                                        {genre.name}
-                                      </span>
-                                ))}
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-                                <div className={`p-3 rounded-md ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}>
-                                  <span className={`font-medium ${theme === "dark" ? "text-gray-400" : "text-gray-700"}`}>
-                                    Épisodes:
-                                  </span>{" "}
-                                    <span className="font-bold">{anime.episodes || "Inconnu"}</span>
-                                </div>
-                                <div className={`p-3 rounded-md ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}>
-                                    <span className={`font-medium ${theme === "dark" ? "text-gray-400" : "text-gray-700"}`}>Année:</span>{" "}
-                                    <span className="font-bold">{anime.year || "Inconnue"}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className={`p-4 rounded-md mb-4 ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}>
-                            <h2 className="text-xl font-semibold mb-2">Synopsis</h2>
-                            <p className={`leading-relaxed ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-                                {anime.synopsis || "Aucun synopsis disponible."}
-                            </p>
-                        </div>
-
-                        <div className="mt-6">
-                            <button className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-md transition-colors mr-3">
-                                Ajouter aux favoris
-                            </button>
-                            <button className={`${theme === "dark" ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-200 hover:bg-gray-300"} font-medium py-2 px-6 rounded-md transition-colors`}>
-                                Voir les épisodes
-                            </button>
-                        </div>
-                    </div>
-                </section>
-            </div>
-        </main>
-    )
+  return <main className="kami-paper-texture min-h-screen">
+    <section className="max-w-7xl mx-auto px-5 md:px-10 lg:px-16 py-12 md:py-20">
+      <Link href="/anime" className="kami-link text-[9px] uppercase tracking-[.3em] text-[var(--kami-muted)]">← Catalogue anime</Link>
+      <div className="grid lg:grid-cols-[minmax(280px,430px)_1fr] gap-10 lg:gap-20 mt-10 items-start">
+        <div className="relative"><div className="absolute -left-5 top-5 hidden md:block kami-vertical text-[9px] tracking-[.3em] text-[var(--kami-red)]">作品 / {String(anime.mal_id).padStart(3,"0")}</div><div className="relative aspect-[3/4] border kami-line overflow-hidden bg-[var(--kami-paper-strong)]"><Image src={anime.images?.jpg?.large_image_url || "/placeholder.svg"} alt={anime.title} fill priority className="object-cover" /></div></div>
+        <div className="pt-2 md:pt-8"><p className="text-[9px] uppercase tracking-[.4em] text-[var(--kami-red)]">Fiche / Anime</p><h1 className="kami-display text-5xl md:text-7xl lg:text-8xl leading-[.88] mt-4 max-w-4xl">{anime.title}</h1><div className="flex flex-wrap gap-x-5 gap-y-2 mt-8 border-y kami-line py-4 text-[9px] uppercase tracking-[.2em] text-[var(--kami-muted)]"><span>{anime.year || "Année inconnue"}</span><span>•</span><span>{anime.episodes || "—"} épisodes</span><span>•</span><span>Animation</span></div><p className="max-w-2xl mt-8 text-sm md:text-base leading-7 text-[var(--kami-muted)]">{anime.synopsis || "Aucun synopsis disponible pour cette œuvre."}</p><div className="mt-8 flex flex-wrap gap-2">{anime.genres?.map(g => <span key={g.name} className="border kami-line px-3 py-2 text-[9px] uppercase tracking-[.18em]">{g.name}</span>)}</div></div>
+      </div>
+    </section>
+    <section className="border-y kami-line bg-[var(--kami-paper-strong)]"><div className="max-w-7xl mx-auto grid md:grid-cols-3"><div className="p-7 md:p-12 border-b md:border-b-0 md:border-r kami-line"><p className="text-[9px] uppercase tracking-[.35em] text-[var(--kami-red)]">01 / Format</p><h2 className="kami-display text-4xl mt-3">Série animée</h2></div><div className="p-7 md:p-12 border-b md:border-b-0 md:border-r kami-line"><p className="text-[9px] uppercase tracking-[.35em] text-[var(--kami-red)]">02 / Épisodes</p><h2 className="kami-display text-4xl mt-3">{anime.episodes || "—"}</h2></div><div className="p-7 md:p-12"><p className="text-[9px] uppercase tracking-[.35em] text-[var(--kami-red)]">03 / Diffusion</p><h2 className="kami-display text-4xl mt-3">{anime.year || "—"}</h2></div></div></section>
+    <section className="max-w-7xl mx-auto px-5 md:px-10 lg:px-16 py-16 md:py-24"><div className="flex items-end justify-between border-b kami-line pb-4 mb-8"><div><p className="text-[9px] uppercase tracking-[.35em] text-[var(--kami-red)]">04 / À découvrir</p><h2 className="kami-display text-4xl md:text-5xl mt-2">Autres séries</h2></div><span className="hidden md:block text-[9px] uppercase tracking-[.25em] text-[var(--kami-muted)]">Sélection KAMI</span></div><div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">{related.map(item => <Link key={item.mal_id} href={`/anime/${generateSlug(item.title)}`} className="group"><div className="relative aspect-[3/4] overflow-hidden border kami-line"><Image src={item.images.jpg.large_image_url} alt={item.title} fill className="object-cover transition duration-700 group-hover:scale-[1.04]" /></div><h3 className="kami-display text-xl mt-3 leading-tight">{item.title}</h3><p className="text-[8px] uppercase tracking-[.2em] text-[var(--kami-muted)] mt-2">Voir la fiche →</p></Link>)}</div></section>
+  </main>
 }
-
