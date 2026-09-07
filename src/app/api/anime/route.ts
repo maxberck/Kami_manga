@@ -6,7 +6,7 @@ export async function GET() {
         const animeData = await getTopAnime();
         return NextResponse.json({ data: animeData });
     } catch (error) {
-        console.error("Erreur dans l'API Manga :", error);
-        return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+        console.error("Erreur dans l'API Anime :", error);
+        return NextResponse.json({ error: "Impossible de récupérer les anime." }, { status: 500 });
     }
 }
