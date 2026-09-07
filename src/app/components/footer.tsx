@@ -1,35 +1,88 @@
+import Link from "next/link"
+
+const links = [
+  { href: "/", label: "Accueil", jp: "ホーム" },
+  { href: "/tri", label: "Mangas", jp: "漫画" },
+  { href: "/anime", label: "Anime", jp: "アニメ" },
+  { href: "/favoris", label: "Favoris", jp: "お気に入り" },
+]
+
 export default function Footer() {
-    return (
-        <footer className="bg-gray-900 text-white py-6 pt-10">
-            <div className="container mx-auto flex flex-col items-center">
-                <h2 className="text-xl font-bold">KAMI MANGA</h2>
-                <div className="flex space-x-4 mt-3">
-                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-                        <svg className="w-6 h-6 fill-white hover:fill-blue-500" viewBox="0 0 24 24">
-                            <path
-                                d="M22 12.07C22 6.5 17.52 2 12 2S2 6.5 2 12.07C2 17.06 5.66 21.14 10.44 22v-7.04h-2.93v-2.89h2.93V9.7c0-2.89 1.72-4.47 4.32-4.47 1.25 0 2.56.22 2.56.22v2.81h-1.44c-1.42 0-1.87.88-1.87 1.79v2.14h3.18l-.51 2.89h-2.67V22C18.34 21.14 22 17.06 22 12.07z"/>
-                        </svg>
-                    </a>
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-                        <svg className="w-6 h-6 fill-white hover:fill-pink-500" viewBox="0 0 24 24">
-                            <path
-                                d="M12 2.2c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.68 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.25-1.68 4.77-4.92 4.92-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-3.25-.15-4.77-1.68-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85C2.43 4.05 3.96 2.52 7.2 2.37 8.47 2.31 8.85 2.2 12 2.2zm0 1.8c-3.12 0-3.48.01-4.7.07-2.18.1-3.2.93-3.3 3.3-.06 1.22-.07 1.58-.07 4.7s.01 3.48.07 4.7c.1 2.38 1.12 3.2 3.3 3.3 1.22.06 1.58.07 4.7.07s3.48-.01 4.7-.07c2.18-.1 3.2-.93 3.3-3.3.06-1.22.07-1.58.07-4.7s-.01-3.48-.07-4.7c-.1-2.38-1.12-3.2-3.3-3.3-1.22-.06-1.58-.07-4.7-.07zm0 3.8a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zm5.2-2.2a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/>
-                        </svg>
-                    </a>
-                    <a href="https://github.com" target="_blank" rel="noopener noreferrer">
-                        <svg className="w-6 h-6 fill-white hover:fill-gray-500" viewBox="0 0 24 24">
-                            <path
-                                d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.66-.22.66-.48 0-.23-.01-.83-.01-1.62-2.78.61-3.37-1.34-3.37-1.34-.45-1.16-1.1-1.47-1.1-1.47-.9-.62.07-.61.07-.61 1 .07 1.53 1.02 1.53 1.02.89 1.53 2.33 1.09 2.9.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.67-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.55 9.55 0 0 1 2.5-.34c.85 0 1.7.11 2.5.34 1.91-1.3 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.69 1.03 1.58 1.03 2.67 0 3.85-2.34 4.69-4.57 4.93.36.31.68.91.68 1.83 0 1.33-.01 2.41-.01 2.73 0 .26.16.58.67.48A10.02 10.02 0 0 0 22 12c0-5.52-4.48-10-10-10z"/>
-                        </svg>
-                    </a>
-                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-                        <svg className="w-6 h-6 fill-white hover:fill-blue-400" viewBox="0 0 24 24">
-                            <path
-                                d="M22.46 6c-.77.35-1.6.58-2.46.69a4.32 4.32 0 0 0 1.92-2.38 8.59 8.59 0 0 1-2.73 1.04 4.28 4.28 0 0 0-7.3 3.91A12.13 12.13 0 0 1 3.15 4.2a4.28 4.28 0 0 0 1.33 5.7 4.25 4.25 0 0 1-1.94-.54v.05a4.28 4.28 0 0 0 3.42 4.2 4.3 4.3 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.97A8.61 8.61 0 0 1 2 18.56a12.15 12.15 0 0 0 6.56 1.92c7.88 0 12.2-6.53 12.2-12.2 0-.18 0-.36-.01-.53A8.67 8.67 0 0 0 22.46 6z"/>
-                        </svg>
-                    </a>
-                </div>
+  return (
+    <footer className="border-t kami-line bg-[var(--kami-paper)] text-[var(--kami-ink)]">
+      <div className="mx-auto max-w-7xl px-5 md:px-10">
+        <div className="grid gap-10 py-12 md:grid-cols-[1.5fr_1fr_1fr] md:py-16">
+          <div>
+            <div className="flex items-start gap-4">
+              <div>
+                <p className="kami-display text-5xl font-bold tracking-[-.09em] leading-none">
+                  KAMI<span className="text-[var(--kami-red)]">.</span>
+                </p>
+                <p className="mt-3 text-[8px] uppercase tracking-[.34em] text-[var(--kami-muted)]">
+                  Manga / Anime
+                </p>
+              </div>
+              <span className="kami-vertical border-l kami-line pl-3 text-[9px] tracking-[.2em] text-[var(--kami-muted)]">
+                漫画案内所
+              </span>
             </div>
-        </footer>
-    )
+            <p className="mt-7 max-w-sm text-sm leading-6 text-[var(--kami-muted)]">
+              Une bibliothèque éditoriale dédiée aux mangas et anime, pensée pour découvrir de nouvelles œuvres.
+            </p>
+          </div>
+
+          <div>
+            <p className="mb-5 text-[8px] uppercase tracking-[.32em] text-[var(--kami-red)]">01 / Navigation</p>
+            <div className="border-t kami-line">
+              {links.map((link, index) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="group flex items-center justify-between border-b kami-line py-3 transition hover:px-2"
+                >
+                  <span className="flex items-center gap-4">
+                    <span className="text-[8px] text-[var(--kami-muted)]">0{index + 1}</span>
+                    <span className="text-[10px] uppercase tracking-[.2em]">{link.label}</span>
+                  </span>
+                  <span className="text-[9px] text-[var(--kami-muted)] transition group-hover:text-[var(--kami-red)]">{link.jp}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-5 text-[8px] uppercase tracking-[.32em] text-[var(--kami-red)]">02 / Réseaux</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                ["Facebook", "https://facebook.com"],
+                ["Instagram", "https://instagram.com"],
+                ["GitHub", "https://github.com"],
+                ["Twitter", "https://twitter.com"],
+              ].map(([label, href]) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border kami-line px-3 py-4 text-[8px] uppercase tracking-[.18em] transition hover:border-[var(--kami-ink)] hover:bg-[var(--kami-ink)] hover:text-[var(--kami-paper)]"
+                >
+                  {label} ↗
+                </a>
+              ))}
+            </div>
+            <p className="mt-5 text-[8px] leading-5 tracking-[.12em] text-[var(--kami-muted)]">
+              漫画 · アニメ · 発見
+              <br />
+              Discover something new.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 border-t kami-line py-5 text-[7px] uppercase tracking-[.28em] text-[var(--kami-muted)] sm:flex-row sm:items-center sm:justify-between">
+          <span>KAMI. — Édition 2026 · Bruxelles</span>
+          <span>漫画案内所 / Manga &amp; Anime</span>
+        </div>
+      </div>
+    </footer>
+  )
 }
