@@ -11,7 +11,7 @@ interface CartManga { id:number; title:string; price:number; quantity:number; im
 export default function Cart(){
  const [cart,setCart]=useState<CartManga[]>([]),[isLogin,setIsLogin]=useState(false)
  useEffect(()=>{setIsLogin(localStorage.getItem("isLogin")==="true");try{setCart(JSON.parse(localStorage.getItem("cart")||"[]"))}catch{setCart([])}},[])
- useEffect(()=>{if(cart.length)localStorage.setItem("cart",JSON.stringify(cart));else localStorage.removeItem("cart")},[cart])
+ useEffect(()=>{if(cart.length)localStorage.setItem("cart",JSON.stringify(cart));else localStorage.removeItem("cart");window.dispatchEvent(new Event("localStorageChange"))},[cart])
  const remove=(id:number)=>setCart(c=>c.filter(x=>x.id!==id))
  const change=(id:number,delta:number)=>setCart(c=>c.map(x=>x.id===id?{...x,quantity:Math.max(1,x.quantity+delta)}:x))
  const clear=()=>setCart([])
