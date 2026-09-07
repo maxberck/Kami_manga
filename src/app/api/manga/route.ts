@@ -7,6 +7,6 @@ export async function GET() {
         return NextResponse.json({ data: mangaData });
     } catch (error) {
         console.error("Erreur dans l'API Manga :", error);
-        return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+        return NextResponse.json({ error: "Impossible de récupérer les mangas." }, { status: 500 });
     }
 }
