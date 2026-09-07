@@ -1,6 +1,5 @@
 import { unstable_cache } from 'next/cache';
 
-// Define an interface for the Manga data structure based on the Jikan API response
 interface MangaData {
     mal_id: number;
     title: string;
@@ -36,32 +35,45 @@ interface JikanApiResponse {
     };
 }
 
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const getTopManga = unstable_cache(
     async () => {
-        // Explicitly type the array of mangas
-        let allMangas: MangaData[] = [];
+        const allMangas: MangaData[] = [];
         const totalPages = 8;
+        const batchSize = 2;
 
-        for (let page = 1; page <= totalPages; page++) {
-            try {
-                const response = await fetch(`https://api.jikan.moe/v4/top/manga?page=${page}`);
+        for (let start = 1; start <= totalPages; start += batchSize) {
+            const pages = Array.from(
+                { length: Math.min(batchSize, totalPages - start + 1) },
+                (_, index) => start + index
+            );
 
-                if (!response.ok) {
-                    console.error(`Erreur API Jikan : ${response.status} ${response.statusText}`);
-                    continue; // Skip to next iteration if response is not ok
+            const results = await Promise.allSettled(
+                pages.map(async page => {
+                    const response = await fetch(`https://api.jikan.moe/v4/top/manga?page=${page}`, {
+                        next: { revalidate: 3600 },
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Jikan ${response.status} ${response.statusText}`);
+                    }
+
+                    const data: JikanApiResponse = await response.json();
+                    return data.data || [];
+                })
+            );
+
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    allMangas.push(...result.value);
+                } else {
+                    console.error(`Erreur lors de la récupération de la page ${pages[index]}:`, result.reason);
                 }
+            });
 
-                // Type the parsed data
-                const data: JikanApiResponse = await response.json();
-
-                if (data.data) {
-                    allMangas = [...allMangas, ...data.data];
-                }
-
-                // Add a small delay to respect API rate limits
-                await new Promise(resolve => setTimeout(resolve, 340));
-            } catch (error) {
-                console.error(`Erreur lors de la récupération de la page ${page}:`, error);
+            if (start + batchSize <= totalPages) {
+                await wait(700);
             }
         }
 
