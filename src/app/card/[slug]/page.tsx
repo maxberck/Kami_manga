@@ -65,9 +65,11 @@ export default function MangaDetails({ params }: { params: Promise<{ slug: strin
       if (found) found.quantity += 1
       else cart.push({ id: findManga.mal_id, title: findManga.title, image: findManga.images?.jpg?.large_image_url || "", price: price(findManga.mal_id), quantity: 1 })
       localStorage.setItem("cart", JSON.stringify(cart))
+      window.dispatchEvent(new Event("localStorageChange"))
       setAddedToCart(true)
     } catch {
       localStorage.setItem("cart", JSON.stringify([{ id: findManga.mal_id, title: findManga.title, image: findManga.images?.jpg?.large_image_url || "", price: price(findManga.mal_id), quantity: 1 }]))
+      window.dispatchEvent(new Event("localStorageChange"))
       setAddedToCart(true)
     }
   }
