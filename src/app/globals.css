@@ -1,11 +1,52 @@
 @import "tailwindcss";
 
-body{
-  /*background: #606b8d;*/
-  margin: 0;
+:root {
+  --kami-paper: #f5f1e8;
+  --kami-paper-strong: #ebe4d5;
+  --kami-ink: #171717;
+  --kami-muted: #6f6a61;
+  --kami-red: #b21f2d;
+  --kami-red-dark: #861824;
+  --kami-line: #d5cdbd;
 }
-@layer utilities {
-  .text-shadow-black {
-    text-shadow: #111111 9px 5px;
-  }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--kami-paper);
+  color: var(--kami-ink);
+  font-family: var(--font-geist-sans), "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+::selection { background: var(--kami-red); color: white; }
+button, a, input { -webkit-tap-highlight-color: transparent; }
+
+.kami-paper-texture {
+  background-color: var(--kami-paper);
+  background-image: radial-gradient(rgba(23,23,23,.045) .7px, transparent .7px), linear-gradient(90deg, rgba(178,31,45,.025), transparent 35%, rgba(23,23,23,.02));
+  background-size: 7px 7px, 100% 100%;
+}
+.kami-vertical { writing-mode: vertical-rl; text-orientation: mixed; }
+.kami-display { font-family: Georgia, "Times New Roman", serif; letter-spacing: -.045em; }
+.kami-line { border-color: var(--kami-line); }
+.kami-link { position: relative; }
+.kami-link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 1px;
+  background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 220ms ease;
+}
+.kami-link:hover::after, .kami-link:focus-visible::after { transform: scaleX(1); transform-origin: left; }
+.kami-fade-up { animation: kami-fade-up 700ms cubic-bezier(.22,1,.36,1) both; }
+@keyframes kami-fade-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+.dark {
+  --kami-paper: #171615;
+  --kami-paper-strong: #211f1c;
+  --kami-ink: #f3eee4;
+  --kami-muted: #aaa295;
+  --kami-red: #d04a55;
+  --kami-red-dark: #aa303b;
+  --kami-line: #3d3933;
 }
