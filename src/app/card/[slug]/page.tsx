@@ -1,182 +1,68 @@
 "use client"
+
 import Image from "next/image"
 import { useEffect, useState, use } from "react"
 import Link from "next/link"
-import {useTheme} from "next-themes";
 
-// Interface complète pour définir la structure du Manga
 interface Manga {
-    mal_id: number
-    title: string
-    images: {
-        jpg: {
-            large_image_url: string
-        }
-    }
-    synopsis?: string
-    status?: string
-    genres?: Array<{
-        mal_id: number
-        name: string
-    }>
-    authors?: Array<{
-        name: string
-    }>
-    published?: {
-        prop?: {
-            from?: {
-                year?: number
-            }
-        }
-    }
+  mal_id: number
+  title: string
+  images: { jpg: { large_image_url: string } }
+  synopsis?: string
+  status?: string
+  genres?: Array<{ mal_id: number; name: string }>
+  authors?: Array<{ name: string }>
+  published?: { prop?: { from?: { year?: number } } }
+  rank?: number
 }
 
-const generateSlug = (title: string) => {
-    return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
-}
+const generateSlug = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
 
 export default function MangaDetails({ params }: { params: Promise<{ slug: string }> }) {
-    const unwrappedParams = use(params)
-    const { slug } = unwrappedParams
-    const { theme } = useTheme();
-    const [manga, setManga] = useState<Manga[]>([])
-    const [mangaHaz, setMangaHaz] = useState<Manga[]>([])
-    const [loading, setLoading] = useState<boolean>(true)
+  const { slug } = use(params)
+  const [manga, setManga] = useState<Manga[]>([])
+  const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        async function fetchManga() {
-            try {
-                const resp = await fetch("/api/manga")
-                const data = await resp.json()
-                setManga(data.data)
-            } catch (error) {
-                console.error(error)
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchManga()
-    }, [])
+  useEffect(() => {
+    fetch("/api/manga").then((res) => res.json()).then((data) => setManga(data.data || [])).catch(console.error).finally(() => setLoading(false))
+  }, [])
 
-    // générer un manga au hasard
-    useEffect(() => {
-        if (manga.length > 0) {
-            // créer une copie du tableau
-            const mangaCopy = [...manga]
+  const findManga = manga.find((item) => generateSlug(item.title) === slug)
+  const related = manga.filter((item) => item.mal_id !== findManga?.mal_id).sort(() => Math.random() - 0.5).slice(0, 4)
 
-            for (let i = mangaCopy.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1))
-                ;[mangaCopy[i], mangaCopy[j]] = [mangaCopy[j], mangaCopy[i]]
-            }
-            // prendre les 5 premier
-            setMangaHaz(mangaCopy.slice(0, 5))
-        }
-    }, [manga])
+  if (loading) return <main className="kami-paper-texture min-h-screen flex items-center justify-center"><div className="text-center"><span className="kami-vertical text-xs tracking-[.4em] text-[var(--kami-red)]">KAMI</span><p className="mt-5 text-[10px] uppercase tracking-[.3em] text-[var(--kami-muted)]">Chargement de la fiche</p></div></main>
 
-    // trouver le bon manga avec le slug
-    const findManga = manga.find((currentManga: Manga) => {
-        const mangaSlug = generateSlug(currentManga.title)
-        return mangaSlug === slug
-    })
+  if (!findManga) return <main className="kami-paper-texture min-h-screen flex items-center justify-center px-6"><div className="text-center"><p className="text-[9px] uppercase tracking-[.4em] text-[var(--kami-red)]">Erreur 404</p><h1 className="kami-display text-5xl mt-3">Manga introuvable</h1><Link href="/tri" className="kami-link inline-block mt-8 text-xs uppercase tracking-[.25em]">Retour à la collection</Link></div></main>
 
-    if (loading) {
-        return (
-            <div
-                className={`min-h-screen flex justify-center items-center ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"}`}>
-                <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-red-500 mx-auto"/>
-                    <h2 className={`${theme === "dark" ? "text-white" : "text-zinc-900"} mt-4 text-xl`}>Chargement...</h2>
-                    <p className={`${theme === "dark" ? "text-zinc-400" : "text-zinc-600"}`}>
-                        Préparation des détails du manga
-                    </p>
-                </div>
-            </div>
-        )
-    }
+  return <main className="kami-paper-texture min-h-screen">
+    <section className="max-w-7xl mx-auto px-5 md:px-10 lg:px-16 py-12 md:py-20">
+      <Link href="/tri" className="kami-link text-[9px] uppercase tracking-[.3em] text-[var(--kami-muted)]">← Collection</Link>
+      <div className="grid lg:grid-cols-[minmax(280px,430px)_1fr] gap-10 lg:gap-20 mt-10 items-start">
+        <div className="relative">
+          <div className="absolute -left-5 top-5 hidden md:block kami-vertical text-[9px] tracking-[.3em] text-[var(--kami-red)]">作品 / {String(findManga.rank || findManga.mal_id).padStart(3, "0")}</div>
+          <div className="relative aspect-[3/4] border kami-line overflow-hidden bg-[var(--kami-paper-strong)]">
+            <Image src={findManga.images?.jpg?.large_image_url || "/placeholder.svg"} alt={findManga.title} fill priority className="object-cover" />
+          </div>
+        </div>
+        <div className="pt-2 md:pt-8">
+          <p className="text-[9px] uppercase tracking-[.4em] text-[var(--kami-red)]">Fiche / Manga</p>
+          <h1 className="kami-display text-5xl md:text-7xl lg:text-8xl leading-[.88] mt-4 max-w-4xl">{findManga.title}</h1>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 mt-8 border-y kami-line py-4 text-[9px] uppercase tracking-[.2em] text-[var(--kami-muted)]">
+            <span>{findManga.status || "Statut inconnu"}</span><span>•</span><span>{findManga.published?.prop?.from?.year || "—"}</span><span>•</span><span>Rang {findManga.rank || "—"}</span>
+          </div>
+          <p className="max-w-2xl mt-8 text-sm md:text-base leading-7 text-[var(--kami-muted)]">{findManga.synopsis || "Aucun synopsis disponible pour cette œuvre."}</p>
+          <div className="mt-8 flex flex-wrap gap-2">{findManga.genres?.map((genre) => <span key={genre.mal_id} className="border kami-line px-3 py-2 text-[9px] uppercase tracking-[.18em]">{genre.name}</span>)}</div>
+        </div>
+      </div>
+    </section>
 
-    if (!findManga) {
-        return (
-            <main className="flex justify-center items-center min-h-screen">
-                <div className="text-xl">Manga pas trouvé</div>
-            </main>
-        )
-    }
+    <section className="border-y kami-line bg-[var(--kami-paper-strong)]">
+      <div className="max-w-7xl mx-auto grid md:grid-cols-2">
+        <div className="p-7 md:p-12 border-b md:border-b-0 md:border-r kami-line"><p className="text-[9px] uppercase tracking-[.35em] text-[var(--kami-red)]">01 / Auteur</p><h2 className="kami-display text-4xl md:text-5xl mt-3">{findManga.authors?.[0]?.name || "Inconnu"}</h2><p className="text-[10px] uppercase tracking-[.2em] text-[var(--kami-muted)] mt-3">Créateur de l'œuvre</p></div>
+        <div className="p-7 md:p-12"><p className="text-[9px] uppercase tracking-[.35em] text-[var(--kami-red)]">02 / Informations</p><dl className="mt-5 grid grid-cols-2 gap-y-5 text-xs"><div><dt className="text-[9px] uppercase tracking-[.2em] text-[var(--kami-muted)]">Statut</dt><dd className="mt-1">{findManga.status || "—"}</dd></div><div><dt className="text-[9px] uppercase tracking-[.2em] text-[var(--kami-muted)]">Publication</dt><dd className="mt-1">{findManga.published?.prop?.from?.year || "—"}</dd></div><div><dt className="text-[9px] uppercase tracking-[.2em] text-[var(--kami-muted)]">Genre principal</dt><dd className="mt-1">{findManga.genres?.[0]?.name || "—"}</dd></div><div><dt className="text-[9px] uppercase tracking-[.2em] text-[var(--kami-muted)]">Identifiant</dt><dd className="mt-1">#{findManga.mal_id}</dd></div></dl></div>
+      </div>
+    </section>
 
-    return (
-        <main className={`${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-            <section
-                className="flex flex-col md:flex-row justify-evenly gap-5 w-full items-center pb-10 pt-5 px-4 md:px-0">
-                <div className="w-full md:flex-1 flex justify-center">
-                    <Image
-                        key={findManga.mal_id}
-                        src={findManga.images.jpg.large_image_url || "/placeholder.svg"}
-                        width={400}
-                        height={400}
-                        className="h-auto md:h-[84vh] w-full md:w-auto max-w-[300px] md:max-w-none border-[#111111] border-2"
-                        alt={findManga.title}
-                    />
-                </div>
-                <div className="w-full md:flex-1 flex flex-col justify-center mt-6 md:mt-0">
-                    <h1 className="text-4xl md:text-8xl font-black">{findManga.title}</h1>
-                    <p className="w-full md:w-[80%] pt-5 text-base md:text-lg font-medium">{findManga.synopsis}</p>
-                    <div className="flex gap-2 flex-wrap pt-5">
-                        {findManga.genres?.map((genre) => (
-                            <button
-                                key={genre.mal_id}
-                                className={`rounded-full border-2 px-3 py-1 md:px-4 md:py-2 text-sm md:text-base text-black hover:bg-black hover:text-white ${theme === 'dark'? 'text-white hover:bg-[bg-gray-800] hover:text-white border-[white]' : 'text-black hover:bg-black hover:text-white border-[black]' }`}
-                            >
-                                {genre.name}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </section>
-            <section className={"flex flex-col md:flex-row"}>
-                <div
-                    className={`bg-black h-auto md:h-[25vh] w-full md:w-[25%] flex text-left pl-[6%] justify-center flex-col py-4 md:py-0`}
-                >
-                    <p className={`text-white text-lg md:text-xl`}>STATUS&nbsp;&nbsp; {findManga.status}</p>
-                    <p className={`text-white text-lg md:text-xl`}>&nbsp;&nbsp;GENRE&nbsp;&nbsp; {findManga.genres?.[0]?.name}</p>
-                    <p className={`text-white text-lg md:text-xl`}>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATE&nbsp;&nbsp; {findManga.published?.prop?.from?.year}
-                    </p>
-                </div>
-                <div className={`bg-red-300 h-auto md:h-[25vh] w-full flex flex-col p-4 md:p-2 md:pl-[10%] justify-center`}>
-                    <h1 className={`font-black text-4xl md:text-7xl mb-3 md:mb-5`}>L&#39;AUTEUR</h1>
-                    <div className={`flex gap-10 md:gap-20`}>
-                        <div>
-                            <p className={`text-base md:text-lg font-black`}>dessin</p>
-                            <p className={`text-xl md:text-3xl font-black`}>{findManga.authors?.[0]?.name}</p>
-                        </div>
-                        <div>
-                            <p className={`text-base md:text-lg font-black`}>scénario</p>
-                            <p className={`text-xl md:text-3xl font-black`}>{findManga.authors?.[0]?.name}</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section className={`flex justify-center w-full py-8 md:py-12`}>
-                <div className={`flex flex-wrap justify-center md:justify-between w-full md:w-[90%] px-4 md:px-0`}>
-                    {mangaHaz.length > 0 ? (
-                        mangaHaz.map((manga) => (
-                            <div key={manga.mal_id} className="w-[280px]">
-                                <Link href={`/card/${generateSlug(manga.title)}`} className="text-blue-500">
-                                    <Image
-                                        src={manga.images.jpg.large_image_url || "/placeholder.svg"}
-                                        alt={manga.title}
-                                        width={250}
-                                        height={375}
-                                        className="rounded-md w-[280px] h-[400px] object-cover"
-                                    />
-                                </Link>
-                                <p className="mt-2 text-lg font-semibold">{manga.title.substring(0, 31) || "Inconnu"}</p>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="text-center py-8">Loading related manga...</div>
-                    )}
-                </div>
-            </section>
-        </main>
-    )
+    <section className="max-w-7xl mx-auto px-5 md:px-10 lg:px-16 py-16 md:py-24"><div className="flex items-end justify-between border-b kami-line pb-4 mb-8"><div><p className="text-[9px] uppercase tracking-[.35em] text-[var(--kami-red)]">03 / À découvrir</p><h2 className="kami-display text-4xl md:text-5xl mt-2">Lectures voisines</h2></div><span className="hidden md:block text-[9px] uppercase tracking-[.25em] text-[var(--kami-muted)]">Sélection KAMI</span></div><div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">{related.map((item) => <Link key={item.mal_id} href={`/card/${generateSlug(item.title)}`} className="group"><div className="relative aspect-[3/4] overflow-hidden border kami-line bg-[var(--kami-paper-strong)]"><Image src={item.images?.jpg?.large_image_url || "/placeholder.svg"} alt={item.title} fill className="object-cover transition duration-700 group-hover:scale-[1.04]" /></div><p className="kami-display text-xl mt-3 leading-tight">{item.title}</p><p className="text-[8px] uppercase tracking-[.2em] text-[var(--kami-muted)] mt-2">Découvrir →</p></Link>)}</div></section>
+  </main>
 }
